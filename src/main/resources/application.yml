@@ -1,0 +1,22 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: insolvency-delta-consumer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+insolvency:
+  delta:
+    group-id: insolvency-delta-consumer
+    topic:
+      main: insolvency-topic
+      retry: insolvency-topic-retry
+      error: insolvency-topic-error
+
+logger:
+  namespace: insolvency-delta-consumer
+
+api:
+  endpoint: ${INSOLVENCY_DATA_API_URL:localhost}
