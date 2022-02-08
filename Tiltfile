@@ -1,4 +1,4 @@
-print('insolvency-delta-consumer')
+print('insolvency-data-api')
 
 docker_compose(
   configPaths = [

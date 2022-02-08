@@ -56,30 +56,6 @@ deps:
 	@# Help: Install dependencies
 	brew install kafka
 
-.PHONY: docker/kafka
-docker/kafka: docker/kafka-start docker/kafka-create-topics
-	@# Help: Run kafka and create topics within docker
-
-.PHONY: docker/kafka-start
-docker/kafka-start:
-	@# Help: Run kafka within docker
-	tilt up
-	sleep 15
-
-.PHONY: docker/kafka-create-topics
-docker/kafka-create-topics:
-	@# Help: Create kafka topics within docker
-	@kafka-topics --create   --bootstrap-server localhost:29092   --replication-factor 1 --partitions 1   --topic insolvency-delta
-	@kafka-topics --create   --bootstrap-server localhost:29092   --replication-factor 1 --partitions 1   --topic insolvency-delta-retry
-	@kafka-topics --create   --bootstrap-server localhost:29092   --replication-factor 1 --partitions 1   --topic insolvency-delta-error
-	@printf "\nKafka Topics:\n\n"
-	@kafka-topics --list --bootstrap-server localhost:29092
-
-.PHONY: docker/kafka-stop
-docker/kafka-stop:
-	@# Help: Stop kafka within docker
-	tilt down
-
 .PHONY: lint
 lint: lint/docker-compose sonar
 	@# Help: Run all lint/* targets and sonar
