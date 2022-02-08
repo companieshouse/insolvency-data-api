@@ -31,7 +31,6 @@
 		<ch-kafka.version>1.4.2</ch-kafka.version>
 		<structured-logging.version>1.9.12</structured-logging.version>
 		<kafka-models.version>1.0.25</kafka-models.version>
-		<private-api-sdk-java.version>2.0.65</private-api-sdk-java.version>
 		<api-sdk-manager-java-library.version>1.0.4</api-sdk-manager-java-library.version>
 		<cucumber-java.version>7.2.3</cucumber-java.version>
 		<jib-maven-plugin.version>3.1.1</jib-maven-plugin.version>
@@ -85,11 +84,6 @@
 			<groupId>uk.gov.companieshouse</groupId>
 			<artifactId>structured-logging</artifactId>
 			<version>${structured-logging.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.gov.companieshouse</groupId>
-			<artifactId>private-api-sdk-java</artifactId>
-			<version>${private-api-sdk-java.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.gov.companieshouse</groupId>
