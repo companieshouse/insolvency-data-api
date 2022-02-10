@@ -2,5 +2,7 @@
 logger:
   namespace: insolvency-data-api
 
-api:
-  endpoint: ${INSOLVENCY_DATA_API_URL:localhost}
+chs:
+  kafka:
+    api:
+      endpoint: ${CHS_KAFKA_API_URL:localhost}

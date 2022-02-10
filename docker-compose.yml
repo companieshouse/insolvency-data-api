@@ -1,1 +1,14 @@
-version: '3.1'
+version: "3"
+services:
+  mongodb_container:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${INSOLVENCY_DATA_API_DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD:  ${INSOLVENCY_DATA_API_DB_PASSWORD}
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+
+volumes:
+  mongodb_data_container:
