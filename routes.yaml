@@ -1,0 +1,5 @@
+app_name: insolvency-data-api
+group: api
+weight: 991
+routes:
+   1: ^/insolvency-data-api/healthcheck
