@@ -31,6 +31,8 @@ build:
 	$(info Setting version: $(version))
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	$(info Packing version: $(version))
+	pwd	
+	ls -lrt
 	mvn package -Dmaven.test.skip=true
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
@@ -52,6 +54,7 @@ test-integration:
 run-local: 
 	@# Help: Run springboot app locally	
 	mvn spring-boot:run
+
 .PHONY: package
 package:
 	@# Help: Create a single versioned deployable package (i.e. jar, zip, tar, etc.). May be dependent on the build target being run before package
