@@ -31,8 +31,6 @@ build:
 	$(info Setting version: $(version))
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	$(info Packing version: $(version))
-	pwd	
-	ls -lrt
 	mvn package -Dmaven.test.skip=true
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
