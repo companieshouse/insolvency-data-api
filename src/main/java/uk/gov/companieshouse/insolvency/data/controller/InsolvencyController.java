@@ -17,7 +17,11 @@ public class InsolvencyController {
     private InsolvencyService insolvencyService;
 
     /**
-     * Java doc here TODO
+     * PUT request for insolvency
+     *
+     * @param  companyNumber  the company number for insolvency
+     * @param  requestBody  the request body containing insolvency data
+     * @return  ResponseEntity<Void>
      */
     @PutMapping("/company/{company_number}/insolvency")
     public ResponseEntity<Void> insolvency(

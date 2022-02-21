@@ -2,8 +2,6 @@ package uk.gov.companieshouse.insolvency.data.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.validation.constraints.NotNull;
-
 public class Appointment {
     @JsonProperty("forename")
     public String forename;
