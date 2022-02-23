@@ -10,12 +10,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.Resource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import uk.gov.companieshouse.insolvency.data.helpers.FixtureHelper;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import uk.gov.companieshouse.insolvency.data.requests.InsolvencyRequest;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyService;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -24,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
-public class InsolvencyControllerITest {
+public class InsolvencyControllerTest {
 
     private MockMvc mockMvc;
 
@@ -32,14 +36,14 @@ public class InsolvencyControllerITest {
     private InsolvencyService insolvencyService;
 
     @InjectMocks
-    InsolvencyController insolvencyController;
+    private InsolvencyController insolvencyController;
 
-    @Autowired
-    private FixtureHelper fixtureHelper;
+    @Value("classpath:data/InsolvencyRequest.json")
+    private Resource resourceFile;
 
-    ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = new ObjectMapper();
 
-    Gson gson = new Gson();
+    private Gson gson = new Gson();
 
     @BeforeEach
     void setUp() {
@@ -50,15 +54,15 @@ public class InsolvencyControllerITest {
     @Test
     @DisplayName("Insolvency PUT request")
     public void returnHealthStatusSuccessfully() throws Exception {
-        String jsonFile = fixtureHelper.readJsonFile("Insolvency");
+        String jsonFile = FileUtils.readFileToString(resourceFile.getFile(), StandardCharsets.UTF_8);
         InsolvencyRequest insolvencyRequest = mapper.readValue(jsonFile, InsolvencyRequest.class);
         doNothing().when(insolvencyService).saveInsolvency(isA(InsolvencyRequest.class));
-        String url = String.format("/company/%s/insolvency", insolvencyRequest.insolvency.get(0).companyNumber);
+        String url = String.format("/company/%s/insolvency", "02588581");
         mockMvc.perform(put(url).contentType(APPLICATION_JSON)
                 .content(jsonFile)).andExpect(status().isOk());
 
-        verify(insolvencyService).saveInsolvency(argThat((x) -> {
-            assert(gson.toJson(x).equals(gson.toJson(insolvencyRequest)));
+        verify(insolvencyService).saveInsolvency(argThat((insolvencyArgument) -> {
+            assert(gson.toJson(insolvencyArgument).equals(gson.toJson(insolvencyRequest)));
             return true;
         }));
     }
