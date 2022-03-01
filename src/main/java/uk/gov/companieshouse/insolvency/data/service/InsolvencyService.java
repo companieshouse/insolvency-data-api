@@ -16,8 +16,13 @@ public class InsolvencyService {
         this.insolvencyRepository = insolvencyRepository;
     }
 
+    /**
+     * Persist company insolvency information to mongodb collection.
+     * @param insolvencyApi company insolvency information {@link InternalCompanyInsolvency}
+     */
     public void persist(final InternalCompanyInsolvency insolvencyApi) {
-        logger.debug(String.format("Data saved in company_insolvency collection : %s", insolvencyApi.toString()));
+        logger.debug(String.format("Data saved in company_insolvency collection : %s",
+                insolvencyApi.toString()));
         insolvencyRepository.save(insolvencyApi);
     }
 }
