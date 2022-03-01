@@ -32,7 +32,7 @@
 		<jib-maven-plugin.version>3.1.1</jib-maven-plugin.version>
 		<skip.integration.tests>false</skip.integration.tests>
 		<skip.unit.tests>false</skip.unit.tests>
-		<private-api-sdk-java.version>2.0.105</private-api-sdk-java.version>
+		<private-api-sdk-java.version>2.0.117</private-api-sdk-java.version>
 
 		<!--sonar configuration-->
 		<sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
@@ -271,7 +271,6 @@
 						<arg>-Xlint</arg>
 						<arg>-Xlint:-processing</arg>
 						<arg>-Xlint:-serial</arg>
-						<arg>-Werror</arg>
 					</compilerArgs>
 					<showWarnings>true</showWarnings>
 					<showDeprecation>true</showDeprecation>

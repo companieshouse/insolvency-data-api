@@ -16,9 +16,12 @@ public class InsolvencyService {
     /**
      * Save insolvency service layer method.
      *
+     * @param  companyNumber  companyNumber
      * @param  insolvency  the insolvency request data
      */
-    public void saveInsolvency(InsolvencyRequest insolvency) throws JsonProcessingException {
+    public void saveInsolvency(
+            String companyNumber,
+            InsolvencyRequest insolvency) throws JsonProcessingException {
         // TODO Save to database
     }
 }

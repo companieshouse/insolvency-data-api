@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.insolvency.data.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +51,8 @@ public class InsolvencyControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(insolvencyController)
                 .build();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     @Test
@@ -56,12 +60,12 @@ public class InsolvencyControllerTest {
     public void returnHealthStatusSuccessfully() throws Exception {
         String jsonFile = FileUtils.readFileToString(resourceFile.getFile(), StandardCharsets.UTF_8);
         InsolvencyRequest insolvencyRequest = mapper.readValue(jsonFile, InsolvencyRequest.class);
-        doNothing().when(insolvencyService).saveInsolvency(isA(InsolvencyRequest.class));
+        doNothing().when(insolvencyService).saveInsolvency(eq("02588581"), isA(InsolvencyRequest.class));
         String url = String.format("/company/%s/insolvency", "02588581");
         mockMvc.perform(put(url).contentType(APPLICATION_JSON)
                 .content(jsonFile)).andExpect(status().isOk());
 
-        verify(insolvencyService).saveInsolvency(argThat((insolvencyArgument) -> {
+        verify(insolvencyService).saveInsolvency(eq("02588581"), argThat((insolvencyArgument) -> {
             assert(gson.toJson(insolvencyArgument).equals(gson.toJson(insolvencyRequest)));
             return true;
         }));

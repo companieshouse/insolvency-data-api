@@ -29,10 +29,10 @@ public class InsolvencyController {
      */
     @PutMapping("/company/{company_number}/insolvency")
     public ResponseEntity<Void> insolvency(
-            @PathVariable("company_number") int companyNumber,
-            @RequestBody InsolvencyRequest requestBody
+            @PathVariable("company_number") String companyNumber,
+            @Validated @RequestBody InsolvencyRequest requestBody
     ) throws JsonProcessingException {
-        insolvencyService.saveInsolvency(requestBody);
+        insolvencyService.saveInsolvency(companyNumber, requestBody);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
