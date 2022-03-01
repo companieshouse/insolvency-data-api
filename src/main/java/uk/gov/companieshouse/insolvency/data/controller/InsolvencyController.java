@@ -18,7 +18,8 @@ import uk.gov.companieshouse.insolvency.data.service.InsolvencyService;
 @RestController
 public class InsolvencyController {
 
-    private InsolvencyService insolvencyService = new InsolvencyService();
+    @Autowired
+    private InsolvencyService insolvencyService;
 
     /**
      * PUT request for insolvency.
@@ -30,7 +31,7 @@ public class InsolvencyController {
     @PutMapping("/company/{company_number}/insolvency")
     public ResponseEntity<Void> insolvency(
             @PathVariable("company_number") String companyNumber,
-            @Validated @RequestBody InsolvencyRequest requestBody
+            @RequestBody InsolvencyRequest requestBody
     ) throws JsonProcessingException {
         insolvencyService.saveInsolvency(companyNumber, requestBody);
         return ResponseEntity.status(HttpStatus.OK).build();
