@@ -1,5 +1,5 @@
 app_name: insolvency-data-api
 group: api
-weight: 991
+weight: 900
 routes:
-   1: ^/insolvency-data-api/healthcheck
+   1: ^/company/.*?/insolvency/.*?$
