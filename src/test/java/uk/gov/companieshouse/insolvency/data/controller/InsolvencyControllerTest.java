@@ -11,17 +11,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.io.Resource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
-import uk.gov.companieshouse.insolvency.data.requests.InsolvencyRequest;
+import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyService;
+import uk.gov.companieshouse.logging.Logger;
 
-import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,7 +30,10 @@ public class InsolvencyControllerTest {
 
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
+    private Logger logger;
+
+    @Mock
     private InsolvencyService insolvencyService;
 
     @InjectMocks
@@ -53,9 +54,10 @@ public class InsolvencyControllerTest {
     @Test
     @DisplayName("Insolvency PUT request")
     public void callInsolvencyPutRequest() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
 
-        InsolvencyRequest request = new InsolvencyRequest();
-        doNothing().when(insolvencyService).saveInsolvency(eq("02588581"), isA(InternalCompanyInsolvency.class));
         String url = String.format("/company/%s/insolvency", "02588581");
         mockMvc.perform(put(url).contentType(APPLICATION_JSON)
                 .content(gson.toJson(request))).andExpect(status().isOk());
