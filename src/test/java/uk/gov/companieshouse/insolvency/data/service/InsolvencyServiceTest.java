@@ -20,7 +20,7 @@ public class InsolvencyServiceTest {
 
     @Test
     void when_insolvency_data_is_given_then_data_should_be_saved() {
-        underTest.persist(new InternalCompanyInsolvency());
+        underTest.saveInsolvency("CH363453", new InternalCompanyInsolvency());
 
         Mockito.verify(repository, Mockito.times(1)).save(Mockito.any());
     }
