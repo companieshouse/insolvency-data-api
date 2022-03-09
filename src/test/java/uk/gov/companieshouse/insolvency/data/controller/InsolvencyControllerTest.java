@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
+import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyService;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -35,6 +36,9 @@ public class InsolvencyControllerTest {
 
     @Mock
     private InsolvencyService insolvencyService;
+
+    @Mock
+    private InsolvencyApiService insolvencyApiService;
 
     @InjectMocks
     private InsolvencyController insolvencyController;

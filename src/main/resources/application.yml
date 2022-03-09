@@ -7,6 +7,8 @@ chs:
     api:
       endpoint: ${CHS_KAFKA_API_URL:localhost}
 
+CHS_API_KEY:  ${CHS_KAFKA_API_URL:chsApiKey}
+
 springfox:
   documentation:
     auto-startup: false
