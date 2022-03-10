@@ -27,7 +27,6 @@ public class InsolvencyService {
      * Persist company insolvency information to mongodb collection.
      * @param insolvencyApi company insolvency information {@link InternalCompanyInsolvency}
      */
-    @Transactional
     public void saveInsolvency(String companyNumber, InternalCompanyInsolvency insolvencyApi) {
         InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(companyNumber, insolvencyApi);
 
