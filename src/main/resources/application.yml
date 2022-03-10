@@ -12,3 +12,8 @@ CHS_API_KEY:  ${CHS_KAFKA_API_URL:chsApiKey}
 springfox:
   documentation:
     auto-startup: false
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URL:mongodb://localhost:27017/insovlency}
