@@ -3,6 +3,7 @@ package uk.gov.companieshouse.insolvency.data.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,7 +43,7 @@ public class InsolvencyController {
      * @return  no response
      */
     @PutMapping("/company/{company_number}/insolvency")
-    @Transactional
+    @Transactional(value = "mongoTransactionManager", propagation = Propagation.REQUIRED)
     public ResponseEntity<Void> insolvency(
             @PathVariable("company_number") String companyNumber,
             @RequestBody InternalCompanyInsolvency requestBody

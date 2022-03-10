@@ -15,4 +15,5 @@ springfox:
 spring:
   data:
     mongodb:
-      uri: ${MONGODB_URL:mongodb://localhost:27017/insolvency}
+      uri: ${MONGODB_URL:mongodb://mongo-db1-rebel1.development.aws.internal:27017/vamshi-test}
+
