@@ -43,7 +43,7 @@ public class InsolvencyController {
      * @return  no response
      */
     @PutMapping("/company/{company_number}/insolvency")
-    @Transactional(value = "mongoTransactionManager", propagation = Propagation.REQUIRED)
+    @Transactional
     public ResponseEntity<Void> insolvency(
             @PathVariable("company_number") String companyNumber,
             @RequestBody InternalCompanyInsolvency requestBody
