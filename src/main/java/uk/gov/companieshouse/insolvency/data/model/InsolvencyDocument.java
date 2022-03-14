@@ -2,6 +2,7 @@ package uk.gov.companieshouse.insolvency.data.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 
 @Document(collection = "company_insolvency")
@@ -12,6 +13,7 @@ public class InsolvencyDocument {
 
     private final String companyNumber;
 
+    @Field(name = "data")
     private final CompanyInsolvency companyInsolvency;
 
     private final Updated updated;

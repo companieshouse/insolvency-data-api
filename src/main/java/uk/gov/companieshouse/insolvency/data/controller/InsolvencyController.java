@@ -1,19 +1,17 @@
 package uk.gov.companieshouse.insolvency.data.controller;
 
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.companieshouse.api.delta.Insolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
-import uk.gov.companieshouse.insolvency.data.requests.InsolvencyRequest;
+import uk.gov.companieshouse.api.insolvency.ModelCase;
+import uk.gov.companieshouse.api.insolvency.Practitioners;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyService;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -40,6 +38,12 @@ public class InsolvencyController {
             @PathVariable("company_number") String companyNumber,
             @RequestBody InternalCompanyInsolvency requestBody
     ) throws JsonProcessingException {
+        ModelCase newCase = new ModelCase();
+        Practitioners prac = new Practitioners();
+        prac.setName("test");
+        prac.setAppointedOn(LocalDate.now());
+        newCase.getPractitioners().add(prac);
+        requestBody.getExternalData().getCases().add(newCase);
 
         insolvencyService.saveInsolvency(companyNumber, requestBody);
 
