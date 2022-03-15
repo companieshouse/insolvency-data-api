@@ -10,22 +10,30 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
+import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
+import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(MockitoExtension.class)
-public class InsolvencyServiceTest {
+class InsolvencyServiceImplTest {
 
     @Mock
     private InsolvencyRepository repository;
 
+    @Mock
+    private Logger logger;
+
+    @Mock
+    private InsolvencyApiService insolvencyApiService;
+
     @InjectMocks
-    private InsolvencyService underTest;
+    private InsolvencyServiceImpl underTest;
 
     @Test
     void when_insolvency_data_is_given_then_data_should_be_saved() {
         InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
 
-        underTest.saveInsolvency("CH363453", companyInsolvency);
+        underTest.processInsolvency("CH363453", companyInsolvency);
 
         Mockito.verify(repository, Mockito.times(1)).save(Mockito.any());
     }

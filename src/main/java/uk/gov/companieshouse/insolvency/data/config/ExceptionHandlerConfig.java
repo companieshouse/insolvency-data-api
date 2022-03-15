@@ -22,7 +22,6 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<Object> handleException(Exception ex, WebRequest request) {
-
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("timestamp", LocalDateTime.now());
         responseBody.put("message", "Unable to process the request.");

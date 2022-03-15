@@ -18,7 +18,7 @@ import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
-import uk.gov.companieshouse.insolvency.data.service.InsolvencyService;
+import uk.gov.companieshouse.insolvency.data.service.InsolvencyServiceImpl;
 import uk.gov.companieshouse.logging.Logger;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -35,10 +35,7 @@ public class InsolvencyControllerTest {
     private Logger logger;
 
     @Mock
-    private InsolvencyService insolvencyService;
-
-    @Mock
-    private InsolvencyApiService insolvencyApiService;
+    private InsolvencyServiceImpl insolvencyService;
 
     @InjectMocks
     private InsolvencyController insolvencyController;
@@ -66,6 +63,5 @@ public class InsolvencyControllerTest {
         mockMvc.perform(put(url).contentType(APPLICATION_JSON)
                 .content(gson.toJson(request))).andExpect(status().isOk());
     }
-
 
 }
