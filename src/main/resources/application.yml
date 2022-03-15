@@ -12,6 +12,11 @@ springfox:
   documentation:
     auto-startup: false
 
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URL:mongodb://127.0.0.1:27021/insolvency}
+
 insolvency:
   transactions: ${TRANSACTIONS_ENABLED:false}
 
