@@ -49,6 +49,10 @@ public class InsolvencyController {
             @RequestBody InternalCompanyInsolvency requestBody
     ) throws JsonProcessingException {
 
+        logger.info(String.format(
+                "Processing company insolvency information for company number %s",
+                companyNumber));
+
         insolvencyService.saveInsolvency(companyNumber, requestBody);
 
         logger.info(String.format(
