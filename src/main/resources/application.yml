@@ -5,7 +5,8 @@ logger:
 chs:
   kafka:
     api:
-      endpoint: ${CHS_KAFKA_API_URL:localhost}
+      endpoint: ${CHS_URL:localhost}
+      key: ${CHS_API_KEY:chsApiKey}
 
 springfox:
   documentation:
@@ -14,4 +15,5 @@ springfox:
 spring:
   data:
     mongodb:
-      uri: ${MONGODB_URL:mongodb://localhost:27017/insovlency}
+      uri: ${MONGODB_URL:mongodb://127.0.0.1:27021/insolvency}
+
