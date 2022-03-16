@@ -1,11 +1,11 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
 import java.time.OffsetDateTime;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
@@ -25,9 +25,7 @@ public class InsolvencyServiceTest {
     void when_insolvency_data_is_given_then_data_should_be_saved() {
         InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
 
-        underTest.saveInsolvency("CH363453", companyInsolvency);
 
-        Mockito.verify(repository, Mockito.times(1)).save(Mockito.any());
     }
 
     private InternalCompanyInsolvency createInternalCompanyInsolvency() {
