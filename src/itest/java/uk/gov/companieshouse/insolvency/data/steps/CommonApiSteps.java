@@ -18,7 +18,7 @@ public class CommonApiSteps {
     @Autowired
     protected TestRestTemplate restTemplate;
 
-    @Given("the application running")
+    @Given("Insolvency data api service is running")
     public void theApplicationRunning() {
         assertThat(restTemplate).isNotNull();
         lastResponse = null;

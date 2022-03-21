@@ -12,7 +12,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
-import uk.gov.companieshouse.insolvency.data.AbstractMongoConfig;
+import uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.model.Updated;
 
