@@ -2,6 +2,7 @@ package uk.gov.companieshouse.insolvency.data.service;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.GenerateEtagUtil;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
@@ -58,6 +59,8 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
         Updated updated = new Updated(internalData.getDeltaAt().toString(),
                 internalData.getUpdatedBy(), "company-insolvency");
 
+        //Generating new Etag
+        externalData.setEtag(GenerateEtagUtil.generateEtag());
         return new InsolvencyDocument(companyNumber, externalData, updated);
     }
 
