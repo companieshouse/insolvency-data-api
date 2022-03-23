@@ -6,4 +6,3 @@ Feature: Health check API endpoint
     When the client invokes '/healthcheck' endpoint
 
     Then the client receives status code of 200
-    And the client receives response body as 'I am healthy'
