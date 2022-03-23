@@ -19,15 +19,15 @@
           {
             "name": "practitioner name",
             "address": {
-              "address_line_1": null,
-              "address_line_2": null,
+              "address_line_1": "address1",
+              "address_line_2": "addressLine",
               "locality": "locality",
               "region": "region",
-              "postal_code": null,
+              "postal_code": "AB1 9YZ",
               "country": "UK"
             },
-            "appointed_on": null,
-            "ceased_to_act_on": null,
+            "appointed_on": "2022-01-01",
+            "ceased_to_act_on": "2022-01-01",
             "role": "receiver"
           }
         ],
