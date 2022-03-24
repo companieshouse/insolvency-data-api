@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import uk.gov.companieshouse.GenerateEtagUtil;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
@@ -49,6 +50,7 @@ public class RepositoryITest extends AbstractMongoConfig {
             "company-insolvency");
     companyInsolvency.setExternalData(externalData);
 
+    externalData.setEtag(GenerateEtagUtil.generateEtag());
     return new InsolvencyDocument(companyNumber, externalData, updated);
   }
 

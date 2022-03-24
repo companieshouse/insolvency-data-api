@@ -21,10 +21,10 @@ public class EnumConverters {
         @Override
         public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
             try {
-                return targetType.getType().getDeclaredMethod(
-                        "fromValue", String.class).invoke(null, source);
-            } catch (NoSuchMethodException | IllegalAccessException
-                    | InvocationTargetException exp) {
+                return targetType.getType().getDeclaredMethod("fromValue", String.class)
+                        .invoke(null, source);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+                    exception) {
                 throw new IllegalArgumentException("Unexpected Enum " + targetType);
             }
         }
@@ -41,10 +41,10 @@ public class EnumConverters {
         @Override
         public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
             try {
-                return sourceType.getType().getDeclaredMethod(
-                        "getValue", null).invoke(source, null);
-            } catch (NoSuchMethodException | IllegalAccessException
-                    | InvocationTargetException exp) {
+                return sourceType.getType().getDeclaredMethod("getValue", null)
+                        .invoke(source, null);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+                    exception) {
                 return ((Enum<?>) source).name();
             }
         }

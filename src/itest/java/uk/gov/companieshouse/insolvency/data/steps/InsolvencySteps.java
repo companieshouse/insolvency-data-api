@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.Before;
-import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
@@ -14,10 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
+import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 public class InsolvencySteps {
 
     private String companyNumber;
@@ -76,10 +77,12 @@ public class InsolvencySteps {
     }
 
     private void verifyDate(InsolvencyDocument actual, InsolvencyDocument expected) {
+        CompanyInsolvency actualCompanyInsolvency = actual.getCompanyInsolvency();
+        CompanyInsolvency expectedCompanyInsolvency = expected.getCompanyInsolvency();
 
-        Assertions.assertThat(actual.getCompanyInsolvency()).isEqualTo(expected.getCompanyInsolvency());
-        Assertions.assertThat(actual.getCompanyNumber()).isEqualTo(expected.getCompanyNumber());
-        Assertions.assertThat(actual.getUpdated().getType()).isEqualTo(expected.getUpdated().getType());
-        Assertions.assertThat(actual.getUpdated().getBy()).isEqualTo(expected.getUpdated().getBy());
+        assertThat(actualCompanyInsolvency.getCases()).isEqualTo(expectedCompanyInsolvency.getCases());
+        assertThat(actual.getCompanyNumber()).isEqualTo(expected.getCompanyNumber());
+        assertThat(actual.getUpdated().getType()).isEqualTo(expected.getUpdated().getType());
+        assertThat(actual.getUpdated().getBy()).isEqualTo(expected.getUpdated().getBy());
     }
 }

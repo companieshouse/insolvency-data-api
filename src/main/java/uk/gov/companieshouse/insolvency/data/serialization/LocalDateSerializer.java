@@ -10,15 +10,14 @@ import java.time.format.DateTimeFormatter;
 public class LocalDateSerializer extends JsonSerializer<LocalDate> {
 
     @Override
-    public void serialize(
-            LocalDate localDate, JsonGenerator jsonGenerator,
-            SerializerProvider serializerProvider) throws IOException {
+    public void serialize(LocalDate localDate, JsonGenerator jsonGenerator,
+                          SerializerProvider serializerProvider) throws IOException {
         if (localDate == null) {
             jsonGenerator.writeNull();
         } else {
-            DateTimeFormatter formatter =
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            String format = localDate.atStartOfDay().format(formatter);
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            String format = localDate.atStartOfDay().format(dateTimeFormatter);
             jsonGenerator.writeRawValue("ISODate(\"" + format + "\")");
         }
     }
