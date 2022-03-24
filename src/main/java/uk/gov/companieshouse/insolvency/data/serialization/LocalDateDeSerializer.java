@@ -21,8 +21,7 @@ public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
         try {
             return LocalDate.parse(jsonNode.get("$date").textValue(), formatter);
         } catch (Exception ex) {
-            //TODO: handle exception
-            return null;
+            throw new RuntimeException("Error occurred while deserializing", ex);
         }
     }
 }
