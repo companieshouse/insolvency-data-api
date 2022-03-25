@@ -61,6 +61,7 @@ public class InsolvencyControllerTest {
 
         String url = String.format("/company/%s/insolvency", "02588581");
         mockMvc.perform(put(url).contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
                 .content(gson.toJson(request))).andExpect(status().isOk());
     }
 
