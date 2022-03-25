@@ -6,4 +6,6 @@ import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 
 @Repository
 public interface InsolvencyRepository extends MongoRepository<InsolvencyDocument, String> {
+
+    InsolvencyDocument findByCompanyNumber(String companyNumber);
 }

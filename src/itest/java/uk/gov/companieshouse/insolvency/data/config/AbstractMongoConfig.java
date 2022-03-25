@@ -1,10 +1,13 @@
-package uk.gov.companieshouse.insolvency.data;
+package uk.gov.companieshouse.insolvency.data.config;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
+/**
+ * Mongodb configuration runs on test container.
+ */
 public class AbstractMongoConfig {
 
     public static final MongoDBContainer mongoDBContainer = new MongoDBContainer(
