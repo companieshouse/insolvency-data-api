@@ -34,7 +34,7 @@ public class InsolvencyApiService {
      * @param companyNumber company insolvency number
      * @return response returned from chs-kafka api
      */
-    public ApiResponse<?> invokeChsKafkaApi(String contextId, String companyNumber) {
+    public ApiResponse<Void> invokeChsKafkaApi(String contextId, String companyNumber) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
         internalApiClient.setBasePath(chsKafkaUrl);
 
