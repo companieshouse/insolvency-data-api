@@ -47,6 +47,7 @@ public class InsolvencySteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.set("x-request-id", "5234234234");
 
         HttpEntity request = new HttpEntity(companyInsolvency, headers);
         String uri = "/company/{company_number}/insolvency";

@@ -35,7 +35,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
     }
 
     @Override
-    public void processInsolvency(String companyNumber,
+    public void processInsolvency(String contextId, String companyNumber,
                                   InternalCompanyInsolvency companyInsolvency) {
         InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
                 companyNumber, companyInsolvency);
@@ -46,7 +46,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                 "Company insolvency collection updated successfully for company number %s",
                 companyNumber));
 
-        insolvencyApiService.invokeChsKafkaApi(companyNumber);
+        insolvencyApiService.invokeChsKafkaApi(contextId, companyNumber);
 
         logger.info(String.format("ChsKafka api invoked successfully for company number %s",
                 companyNumber));

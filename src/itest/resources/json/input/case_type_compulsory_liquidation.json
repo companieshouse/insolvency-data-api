@@ -1,7 +1,7 @@
 {
   "external_data": {
     "etag": "etag",
-    "status": "in-administration",
+    "status": ["in-administration"],
     "cases": [
       {
         "type": "compulsory-liquidation",

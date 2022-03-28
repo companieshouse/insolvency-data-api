@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyService;
@@ -36,16 +37,15 @@ public class InsolvencyController {
      * @return  no response
      */
     @PutMapping("/company/{company_number}/insolvency")
-    public ResponseEntity<Void> insolvency(
+    public ResponseEntity<Void> insolvency(@RequestHeader("x-request-id") String contextId,
             @PathVariable("company_number") String companyNumber,
             @RequestBody InternalCompanyInsolvency requestBody
     ) throws JsonProcessingException {
-
         logger.info(String.format(
                 "Processing company insolvency information for company number %s",
                 companyNumber));
 
-        insolvencyService.processInsolvency(companyNumber, requestBody);
+        insolvencyService.processInsolvency(contextId, companyNumber, requestBody);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
