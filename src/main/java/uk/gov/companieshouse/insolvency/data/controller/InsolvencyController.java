@@ -41,12 +41,11 @@ public class InsolvencyController {
             @PathVariable("company_number") String companyNumber,
             @RequestBody InternalCompanyInsolvency requestBody
     ) throws JsonProcessingException {
-        RequestContext.setId(contextId);
         logger.info(String.format(
                 "Processing company insolvency information for company number %s",
                 companyNumber));
 
-        insolvencyService.processInsolvency(companyNumber, requestBody);
+        insolvencyService.processInsolvency(contextId, companyNumber, requestBody);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }

@@ -9,7 +9,6 @@ import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
-import uk.gov.companieshouse.insolvency.data.controller.RequestContext;
 import uk.gov.companieshouse.logging.Logger;
 
 @Service
@@ -35,13 +34,13 @@ public class InsolvencyApiService {
      * @param companyNumber company insolvency number
      * @return response returned from chs-kafka api
      */
-    public ApiResponse<?> invokeChsKafkaApi(String companyNumber) {
+    public ApiResponse<?> invokeChsKafkaApi(String contextId, String companyNumber) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
         internalApiClient.setBasePath(chsKafkaUrl);
 
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler().postChangedResource(
-                        CHANGED_RESOURCE_URI, mapChangedResource(companyNumber));
+                        CHANGED_RESOURCE_URI, mapChangedResource(contextId, companyNumber));
 
         try {
             return changedResourcePost.execute();
@@ -51,7 +50,7 @@ public class InsolvencyApiService {
         }
     }
 
-    private ChangedResource mapChangedResource(String companyNumber) {
+    private ChangedResource mapChangedResource(String contextId, String companyNumber) {
         String resourceUri = "/company/" + companyNumber + "/company-insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
@@ -62,7 +61,7 @@ public class InsolvencyApiService {
         changedResource.setResourceUri(resourceUri);
         changedResource.event(event);
         changedResource.setResourceKind("company-insolvency");
-        changedResource.setContextId(RequestContext.getId());
+        changedResource.setContextId(contextId);
 
         return changedResource;
     }

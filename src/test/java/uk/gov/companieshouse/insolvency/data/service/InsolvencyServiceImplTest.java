@@ -33,7 +33,7 @@ class InsolvencyServiceImplTest {
     void when_insolvency_data_is_given_then_data_should_be_saved() {
         InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
 
-        underTest.processInsolvency("CH363453", companyInsolvency);
+        underTest.processInsolvency("436534543", "CH363453", companyInsolvency);
 
         Mockito.verify(repository, Mockito.times(1)).save(Mockito.any());
     }
