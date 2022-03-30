@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
+import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 
 public interface InsolvencyService {
@@ -14,5 +15,7 @@ public interface InsolvencyService {
      */
     void processInsolvency(String contextId, String companyNumber,
                            InternalCompanyInsolvency companyInsolvency);
+
+    CompanyInsolvency retrieveCompanyInsolvency(String companyNumber);
 
 }

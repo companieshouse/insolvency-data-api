@@ -70,20 +70,19 @@ public class InsolvencySteps {
 
         Assertions.assertThat(insolvencyDocuments).hasSize(1);
 
-        InsolvencyDocument actual = insolvencyRepository.findByCompanyNumber(this.companyNumber);
+        String uri = "/company/{company_number}/insolvency";
+        String companyNumber = "CH5324324";
+        ResponseEntity<CompanyInsolvency> actual = restTemplate.exchange(uri, HttpMethod.GET, null,
+                CompanyInsolvency.class, companyNumber);
+
 
         InsolvencyDocument expected = objectMapper.readValue(file, InsolvencyDocument.class);
 
-        verifyDate(actual, expected);
+        verifyData(actual.getBody(), expected.getCompanyInsolvency());
     }
 
-    private void verifyDate(InsolvencyDocument actual, InsolvencyDocument expected) {
-        CompanyInsolvency actualCompanyInsolvency = actual.getCompanyInsolvency();
-        CompanyInsolvency expectedCompanyInsolvency = expected.getCompanyInsolvency();
-
-        assertThat(actualCompanyInsolvency.getCases()).isEqualTo(expectedCompanyInsolvency.getCases());
-        assertThat(actual.getCompanyNumber()).isEqualTo(expected.getCompanyNumber());
-        assertThat(actual.getUpdated().getType()).isEqualTo(expected.getUpdated().getType());
-        assertThat(actual.getUpdated().getBy()).isEqualTo(expected.getUpdated().getBy());
+    private void verifyData(CompanyInsolvency actual, CompanyInsolvency expected) {
+        assertThat(actual.getCases()).isEqualTo(expected.getCases());
+        assertThat(actual.getStatus()).isEqualTo(expected.getStatus());
     }
 }
