@@ -62,7 +62,7 @@ public class InsolvencySteps {
         Assertions.assertThat(this.response.getStatusCode()).isSameAs(HttpStatus.valueOf(statusCode));
     }
 
-    @Then("the expected result should match {string}")
+    @Then("the Get request should match {string}")
     public void the_expected_result_should_match(String string) throws IOException {
         File file = new ClassPathResource("/json/output/" + string + ".json").getFile();
 

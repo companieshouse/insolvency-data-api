@@ -5,7 +5,7 @@ Feature: Process company insolvency information
     Given Insolvency data api service is running
     When I send PUT request with payload "<data>"
     Then I should receive 200 status code
-    And the expected result should match "<result>"
+    And the Get request should match "<result>"
 
     Examples:
       | data                             | result                                  |

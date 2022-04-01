@@ -31,7 +31,6 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<Object> handleException(Exception ex, WebRequest request) {
-        ex.printStackTrace();
         String correlationId = generateShortCorrelationId();
         logger.error(String.format("Unexpected exception, correlationId: %s", correlationId), ex);
 
