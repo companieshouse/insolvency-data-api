@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
+import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,18 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
         logger.info(String.format("ChsKafka api invoked successfully for company number %s",
                 companyNumber));
+    }
+
+    @Override
+    public CompanyInsolvency retrieveCompanyInsolvency(String companyNumber) {
+        Optional<InsolvencyDocument> insolvencyDocumentOptional =
+                insolvencyRepository.findByCompanyNumber(companyNumber);
+
+        InsolvencyDocument insolvencyDocument = insolvencyDocumentOptional.orElseThrow(
+                () -> new IllegalArgumentException(String.format(
+                        "Resource not found for company number: %s", companyNumber)));
+
+        return insolvencyDocument.getCompanyInsolvency();
     }
 
     private InsolvencyDocument mapInsolvencyDocument(String companyNumber,

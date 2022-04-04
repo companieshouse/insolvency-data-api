@@ -35,7 +35,7 @@ public class RepositoryITest extends AbstractMongoConfig {
     InsolvencyDocument insolvencyDocument = createInsolvencyDocument("CH253434");
     insolvencyRepository.save(insolvencyDocument);
 
-    Assertions.assertThat(insolvencyRepository.findAll()).hasSize(1);
+    Assertions.assertThat(insolvencyRepository.findByCompanyNumber("CH253434")).isNotEmpty();
   }
 
   private InsolvencyDocument createInsolvencyDocument(String companyNumber) {
