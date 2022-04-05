@@ -2,6 +2,7 @@ package uk.gov.companieshouse.insolvency.data.api;
 
 import java.time.OffsetDateTime;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.ChangedResource;
@@ -9,6 +10,8 @@ import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
+import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.logging.Logger;
 
 @Service
@@ -45,8 +48,17 @@ public class InsolvencyApiService {
         try {
             return changedResourcePost.execute();
         } catch (ApiErrorResponseException exp) {
-            logger.error("Error occurred while calling /resource-changed endpoint", exp);
-            throw new RuntimeException(exp);
+            HttpStatus statusCode = HttpStatus.valueOf(exp.getStatusCode());
+            if (!statusCode.is2xxSuccessful() && statusCode != HttpStatus.SERVICE_UNAVAILABLE) {
+                logger.error("Unsuccessful call to /resource-changed endpoint", exp);
+                throw new MethodNotAllowedException(exp.getMessage());
+            } else if (statusCode == HttpStatus.SERVICE_UNAVAILABLE) {
+                logger.error("Service unavailable while calling /resource-changed endpoint", exp);
+                throw new ServiceUnavailableException(exp.getMessage());
+            } else {
+                logger.error("Error occurred while calling /resource-changed endpoint", exp);
+                throw new RuntimeException(exp);
+            }
         }
     }
 

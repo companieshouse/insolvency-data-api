@@ -48,7 +48,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
         try {
             insolvencyRepository.save(insolvencyDocument);
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException ex) {
             throw new BadRequestException(ex.getMessage());
         }
 

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
+import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.logging.Logger;
 
 @ControllerAdvice
@@ -77,11 +79,52 @@ public class ExceptionHandlerConfig {
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("timestamp", LocalDateTime.now());
-        responseBody.put("message", "Resource not found.");
+        responseBody.put("message", "Bad request.");
         responseBody.put("correlationId", correlationId);
         request.setAttribute("javax.servlet.error.exception", ex, 0);
         return new ResponseEntity(responseBody, HttpStatus.BAD_REQUEST);
     }
+
+    /**
+     * Runtime exception handler.
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
+    @ExceptionHandler(value = {MethodNotAllowedException.class})
+    public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex, WebRequest request) {
+        String correlationId = generateShortCorrelationId();
+        logger.error(String.format("Unexpected exception, correlationId: %s", correlationId), ex);
+
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put("timestamp", LocalDateTime.now());
+        responseBody.put("message", "Unable to process the request.");
+        responseBody.put("correlationId", correlationId);
+        request.setAttribute("javax.servlet.error.exception", ex, 0);
+        return new ResponseEntity(responseBody, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    /**
+     * Runtime exception handler.
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
+    @ExceptionHandler(value = {ServiceUnavailableException.class})
+    public ResponseEntity<Object> handleServiceUnavailableException(Exception ex, WebRequest request) {
+        String correlationId = generateShortCorrelationId();
+        logger.error(String.format("Unexpected exception, correlationId: %s", correlationId), ex);
+
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put("timestamp", LocalDateTime.now());
+        responseBody.put("message", "Service unavailable.");
+        responseBody.put("correlationId", correlationId);
+        request.setAttribute("javax.servlet.error.exception", ex, 0);
+        return new ResponseEntity(responseBody, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
 
     private String generateShortCorrelationId() {
         return UUID.randomUUID().toString().replace("-", "").toUpperCase().substring(0, 8);
