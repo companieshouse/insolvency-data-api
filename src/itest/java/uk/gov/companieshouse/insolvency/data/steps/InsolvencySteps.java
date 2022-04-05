@@ -62,7 +62,7 @@ public class InsolvencySteps {
 
     @When("I send GET request with company number {string}")
     public void i_send_get_request_with_company_number(String companyNumber) throws IOException {
-        String uri = "/company/{company_number}/insolvency";
+        String uri = "/beta/company/{company_number}/insolvency";
         ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, null,
                 CompanyInsolvency.class, companyNumber);
 
@@ -81,7 +81,7 @@ public class InsolvencySteps {
         headers.set("x-request-id", "5234234234");
 
         HttpEntity request = new HttpEntity(companyInsolvency, headers);
-        String uri = "/company/{company_number}/insolvency";
+        String uri = "/beta/company/{company_number}/insolvency";
         String companyNumber = "CH5324324";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
 

@@ -51,7 +51,7 @@ public class InsolvencyApiService {
     }
 
     private ChangedResource mapChangedResource(String contextId, String companyNumber) {
-        String resourceUri = "/company/" + companyNumber + "/company-insolvency";
+        String resourceUri = "/beta/company/" + companyNumber + "/company-insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
         event.setType("changed");
