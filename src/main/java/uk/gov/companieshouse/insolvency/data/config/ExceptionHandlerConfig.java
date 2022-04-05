@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.logging.Logger;
 
 @ControllerAdvice
@@ -60,6 +61,26 @@ public class ExceptionHandlerConfig {
         responseBody.put("correlationId", correlationId);
         request.setAttribute("javax.servlet.error.exception", ex, 0);
         return new ResponseEntity(responseBody, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Runtime exception handler.
+     *
+     * @param ex      exception to handle.
+     * @param request request.
+     * @return error response to return.
+     */
+    @ExceptionHandler(value = {BadRequestException.class})
+    public ResponseEntity<Object> handleBadRequestException(Exception ex, WebRequest request) {
+        String correlationId = generateShortCorrelationId();
+        logger.error(String.format("Unexpected exception, correlationId: %s", correlationId), ex);
+
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put("timestamp", LocalDateTime.now());
+        responseBody.put("message", "Resource not found.");
+        responseBody.put("correlationId", correlationId);
+        request.setAttribute("javax.servlet.error.exception", ex, 0);
+        return new ResponseEntity(responseBody, HttpStatus.BAD_REQUEST);
     }
 
     private String generateShortCorrelationId() {

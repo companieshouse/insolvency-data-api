@@ -10,6 +10,7 @@ import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
+import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.model.Updated;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
@@ -45,7 +46,11 @@ public class InsolvencyServiceImpl implements InsolvencyService {
         InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
                 companyNumber, companyInsolvency);
 
-        insolvencyRepository.save(insolvencyDocument);
+        try {
+            insolvencyRepository.save(insolvencyDocument);
+        } catch (Exception ex) {
+            throw new BadRequestException(ex.getMessage());
+        }
 
         logger.info(String.format(
                 "Company insolvency collection updated successfully for company number %s",
