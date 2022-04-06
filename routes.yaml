@@ -3,4 +3,4 @@ group: api
 weight: 900
 routes:
   1: ^/insolvency-data-api/healthcheck
-  2: ^/beta/company/(.*)/insolvency
+  2: ^/company/(.*)/insolvency
