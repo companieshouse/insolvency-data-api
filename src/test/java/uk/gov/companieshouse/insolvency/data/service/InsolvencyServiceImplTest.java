@@ -48,12 +48,12 @@ class InsolvencyServiceImplTest {
         String companyNumber = "234234";
         InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(),
                 new Updated("at", "by", "type"));
-        Mockito.when(repository.findByCompanyNumber("234234")).thenReturn(Optional.of(document));
+        Mockito.when(repository.findById("234234")).thenReturn(Optional.of(document));
 
         CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency("234234");
 
         Assertions.assertThat(companyInsolvency).isNotNull();
-        Mockito.verify(repository, Mockito.times(1)).findByCompanyNumber(Mockito.any());
+        Mockito.verify(repository, Mockito.times(1)).findById(Mockito.any());
     }
 
     @Test
@@ -62,7 +62,7 @@ class InsolvencyServiceImplTest {
         Assert.assertThrows(RuntimeException.class, () -> underTest.retrieveCompanyInsolvency
                 ("CH4000056"));
 
-        Mockito.verify(repository, Mockito.times(1)).findByCompanyNumber(Mockito.any());
+        Mockito.verify(repository, Mockito.times(1)).findById(Mockito.any());
     }
 
 

@@ -103,7 +103,7 @@ public class InsolvencySteps {
 
         Assertions.assertThat(insolvencyDocuments).hasSize(1);
 
-        Optional<InsolvencyDocument> actual = insolvencyRepository.findByCompanyNumber(this.companyNumber);
+        Optional<InsolvencyDocument> actual = insolvencyRepository.findById(this.companyNumber);
 
         assertThat(actual.isPresent()).isTrue();
 
@@ -130,7 +130,7 @@ public class InsolvencySteps {
         CompanyInsolvency expectedCompanyInsolvency = expected.getCompanyInsolvency();
 
         assertThat(actualCompanyInsolvency.getCases()).isEqualTo(expectedCompanyInsolvency.getCases());
-        assertThat(actual.getCompanyNumber()).isEqualTo(expected.getCompanyNumber());
+        assertThat(actual.getId()).isEqualTo(expected.getId());
         assertThat(actual.getUpdated().getType()).isEqualTo(expected.getUpdated().getType());
         assertThat(actual.getUpdated().getBy()).isEqualTo(expected.getUpdated().getBy());
     }

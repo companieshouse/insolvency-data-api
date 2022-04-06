@@ -56,7 +56,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
     @Override
     public CompanyInsolvency retrieveCompanyInsolvency(String companyNumber) {
         Optional<InsolvencyDocument> insolvencyDocumentOptional =
-                insolvencyRepository.findByCompanyNumber(companyNumber);
+                insolvencyRepository.findById(companyNumber);
 
         InsolvencyDocument insolvencyDocument = insolvencyDocumentOptional.orElseThrow(
                 () -> new IllegalArgumentException(String.format(
