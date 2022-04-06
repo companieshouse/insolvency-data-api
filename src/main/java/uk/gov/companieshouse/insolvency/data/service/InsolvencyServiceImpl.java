@@ -1,8 +1,11 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
 import java.util.Optional;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.GenerateEtagUtil;
@@ -11,6 +14,7 @@ import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.model.Updated;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
@@ -28,7 +32,8 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
     /**
      * Insolvency service to store insolvency data onto mongodb and call chs kafka endpoint.
-     * @param logger the logger
+     *
+     * @param logger               the logger
      * @param insolvencyRepository mongodb repository
      * @param insolvencyApiService chs-kafka api service
      */
@@ -48,8 +53,10 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
         try {
             insolvencyRepository.save(insolvencyDocument);
-        } catch (IllegalArgumentException ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (IllegalArgumentException illegalArgumentEx) {
+            throw new BadRequestException(illegalArgumentEx.getMessage());
+        } catch (DataAccessException dbException) {
+            throw new ServiceUnavailableException(dbException.getMessage());
         }
 
         logger.info(String.format(

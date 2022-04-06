@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class ExceptionHandlerConfig {
     }
 
     /**
-     * Runtime exception handler.
+     * Runtime exception handler. Acts as the catch-all scenario.
      *
      * @param ex      exception to handle.
      * @param request request.
@@ -46,7 +47,7 @@ public class ExceptionHandlerConfig {
     }
 
     /**
-     * Runtime exception handler.
+     * IllegalArgumentException exception handler.
      *
      * @param ex      exception to handle.
      * @param request request.
@@ -66,7 +67,8 @@ public class ExceptionHandlerConfig {
     }
 
     /**
-     * Runtime exception handler.
+     * BadRequestException exception handler.
+     * Thrown when data is given in the wrong format.
      *
      * @param ex      exception to handle.
      * @param request request.
@@ -86,14 +88,15 @@ public class ExceptionHandlerConfig {
     }
 
     /**
-     * Runtime exception handler.
+     * MethodNotAllowedException exception handler.
      *
      * @param ex      exception to handle.
      * @param request request.
      * @return error response to return.
      */
     @ExceptionHandler(value = {MethodNotAllowedException.class})
-    public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex, WebRequest request) {
+    public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex,
+                                                                  WebRequest request) {
         String correlationId = generateShortCorrelationId();
         logger.error(String.format("Unexpected exception, correlationId: %s", correlationId), ex);
 
@@ -106,14 +109,16 @@ public class ExceptionHandlerConfig {
     }
 
     /**
-     * Runtime exception handler.
+     * ServiceUnavailableException exception handler.
+     * To be thrown when there are connection issues.
      *
      * @param ex      exception to handle.
      * @param request request.
      * @return error response to return.
      */
     @ExceptionHandler(value = {ServiceUnavailableException.class})
-    public ResponseEntity<Object> handleServiceUnavailableException(Exception ex, WebRequest request) {
+    public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
+                                                                    WebRequest request) {
         String correlationId = generateShortCorrelationId();
         logger.error(String.format("Unexpected exception, correlationId: %s", correlationId), ex);
 
@@ -124,7 +129,6 @@ public class ExceptionHandlerConfig {
         request.setAttribute("javax.servlet.error.exception", ex, 0);
         return new ResponseEntity(responseBody, HttpStatus.SERVICE_UNAVAILABLE);
     }
-
 
     private String generateShortCorrelationId() {
         return UUID.randomUUID().toString().replace("-", "").toUpperCase().substring(0, 8);
