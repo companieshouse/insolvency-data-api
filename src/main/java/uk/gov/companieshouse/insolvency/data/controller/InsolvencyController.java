@@ -38,7 +38,7 @@ public class InsolvencyController {
      * @param  requestBody  the request body containing insolvency data
      * @return  no response
      */
-    @PutMapping("/beta/company/{company_number}/insolvency")
+    @PutMapping("/company/{company_number}/insolvency")
     public ResponseEntity<Void> insolvency(@RequestHeader("x-request-id") String contextId,
             @PathVariable("company_number") String companyNumber,
             @RequestBody InternalCompanyInsolvency requestBody
@@ -58,7 +58,7 @@ public class InsolvencyController {
      * @param  companyNumber  the company number for insolvency
      * @return  {@link CompanyInsolvency} return company insolvency information
      */
-    @GetMapping("/beta/company/{company_number}/insolvency")
+    @GetMapping("/company/{company_number}/insolvency")
     public ResponseEntity<CompanyInsolvency> insolvency(
             @PathVariable("company_number") String companyNumber) {
         logger.info(String.format(
