@@ -13,10 +13,6 @@ public class InsolvencyDocument {
     @Id
     private String id;
 
-    @Indexed(unique = true)
-    @Field("company_number")
-    private final String companyNumber;
-
     @Field("data")
     private final CompanyInsolvency companyInsolvency;
 
@@ -27,23 +23,19 @@ public class InsolvencyDocument {
 
     /**
      * Instantiate company insolvency document.
-     * @param companyNumber the company number
+     * @param id the company number
      * @param companyInsolvency company insolvency data
      * @param updated company insolvency updated details
      */
-    public InsolvencyDocument(String companyNumber, CompanyInsolvency companyInsolvency,
+    public InsolvencyDocument(String id, CompanyInsolvency companyInsolvency,
                               Updated updated) {
-        this.companyNumber = companyNumber;
+        this.id = id;
         this.companyInsolvency = companyInsolvency;
         this.updated = updated;
     }
 
     public String getId() {
         return id;
-    }
-
-    public String getCompanyNumber() {
-        return companyNumber;
     }
 
     public CompanyInsolvency getCompanyInsolvency() {
