@@ -2,6 +2,7 @@ package uk.gov.companieshouse.insolvency.data.service;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
+
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -10,14 +11,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessResourceFailureException;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
+import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.model.Updated;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 import uk.gov.companieshouse.logging.Logger;
+
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InsolvencyServiceImplTest {
@@ -41,6 +48,18 @@ class InsolvencyServiceImplTest {
         underTest.processInsolvency("436534543", "CH363453", companyInsolvency);
 
         Mockito.verify(repository, Mockito.times(1)).save(Mockito.any());
+    }
+
+    @Test
+    void when_connection_issue_in_db__then_throw_service_unavailable_exception() {
+        InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
+
+        doThrow(new DataAccessResourceFailureException("Connection broken"))
+                .when(repository)
+                .save(isA(InsolvencyDocument.class));
+
+        Assert.assertThrows(ServiceUnavailableException.class, () ->
+                underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
     }
 
     @Test
