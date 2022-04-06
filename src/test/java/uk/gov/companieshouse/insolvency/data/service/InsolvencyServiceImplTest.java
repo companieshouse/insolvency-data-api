@@ -16,6 +16,7 @@ import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
+import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.model.Updated;
@@ -51,7 +52,7 @@ class InsolvencyServiceImplTest {
     }
 
     @Test
-    void when_connection_issue_in_db__then_throw_service_unavailable_exception() {
+    void when_connection_issue_in_db_then_throw_service_unavailable_exception() {
         InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
 
         doThrow(new DataAccessResourceFailureException("Connection broken"))
@@ -73,6 +74,18 @@ class InsolvencyServiceImplTest {
 
         Assertions.assertThat(companyInsolvency).isNotNull();
         Mockito.verify(repository, Mockito.times(1)).findById(Mockito.any());
+    }
+
+    @Test
+    void when_invalid_put_request_then_throw_bad_request_exception() {
+        InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
+
+        doThrow(new IllegalArgumentException())
+                .when(repository)
+                .save(isA(InsolvencyDocument.class));
+
+        Assert.assertThrows(BadRequestException.class, () ->
+                underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
     }
 
     @Test
