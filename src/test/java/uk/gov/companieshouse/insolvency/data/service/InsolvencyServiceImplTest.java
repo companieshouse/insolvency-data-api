@@ -90,7 +90,6 @@ class InsolvencyServiceImplTest {
 
     @Test
     void when_invalid_insolvency_number_is_given_then_throw_exception() {
-
         Assert.assertThrows(RuntimeException.class, () -> underTest.retrieveCompanyInsolvency
                 ("CH4000056"));
 
