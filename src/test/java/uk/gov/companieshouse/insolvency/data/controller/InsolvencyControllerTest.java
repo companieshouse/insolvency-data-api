@@ -8,37 +8,41 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
-import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
+import uk.gov.companieshouse.insolvency.data.config.ExceptionHandlerConfig;
+import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyServiceImpl;
 import uk.gov.companieshouse.logging.Logger;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
+@WebMvcTest(controllers = InsolvencyController.class)
+@ContextConfiguration(classes = {InsolvencyController.class, ExceptionHandlerConfig.class})
 public class InsolvencyControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private Logger logger;
 
-    @Mock
+    @MockBean
     private InsolvencyServiceImpl insolvencyService;
-
-    @InjectMocks
-    private InsolvencyController insolvencyController;
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -46,8 +50,6 @@ public class InsolvencyControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(insolvencyController)
-                .build();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
@@ -60,9 +62,53 @@ public class InsolvencyControllerTest {
         request.setExternalData(new CompanyInsolvency());
 
         String url = String.format("/company/%s/insolvency", "02588581");
-        mockMvc.perform(put(url).contentType(APPLICATION_JSON)
+
+        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
+                isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(url)
+                        .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                .content(gson.toJson(request))).andExpect(status().isOk());
+                        .content(gson.toJson(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Insolvency PUT request - IllegalArgumentException status code 404 not found")
+    public void callInsolvencyPutRequestIllegalArgument() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        String url = String.format("/company/%s/insolvency", "02588581");
+
+        doThrow(new IllegalArgumentException()).when(insolvencyService).processInsolvency(anyString(), anyString(), isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(url)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .content(gson.toJson(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Insolvency PUT request - BadRequestException status code 400")
+    public void callInsolvencyPutRequestBadRequest() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        String url = String.format("/company/%s/insolvency", "02588581");
+
+        doThrow(new BadRequestException("Bad request - data in wrong format"))
+                .when(insolvencyService).processInsolvency(anyString(), anyString(),
+                        isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(url)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .content(gson.toJson(request)))
+                .andExpect(status().isBadRequest());
     }
 
 }
