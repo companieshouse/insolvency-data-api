@@ -3,6 +3,7 @@ package uk.gov.companieshouse.insolvency.data.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +20,8 @@ import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.config.ExceptionHandlerConfig;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
+import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyServiceImpl;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -34,6 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = InsolvencyController.class)
 @ContextConfiguration(classes = {InsolvencyController.class, ExceptionHandlerConfig.class})
 public class InsolvencyControllerTest {
+    private static final String COMPANY_NUMBER = "02588581";
+    private static final String URL = String.format("/company/%s/insolvency", COMPANY_NUMBER);
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,12 +66,10 @@ public class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        String url = String.format("/company/%s/insolvency", "02588581");
-
         doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
                 isA(InternalCompanyInsolvency.class));
 
-        mockMvc.perform(put(url)
+        mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .content(gson.toJson(request)))
@@ -80,11 +83,11 @@ public class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        String url = String.format("/company/%s/insolvency", "02588581");
+        doThrow(new IllegalArgumentException())
+                .when(insolvencyService).processInsolvency(anyString(), anyString(),
+                        isA(InternalCompanyInsolvency.class));
 
-        doThrow(new IllegalArgumentException()).when(insolvencyService).processInsolvency(anyString(), anyString(), isA(InternalCompanyInsolvency.class));
-
-        mockMvc.perform(put(url)
+        mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .content(gson.toJson(request)))
@@ -98,17 +101,68 @@ public class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        String url = String.format("/company/%s/insolvency", "02588581");
-
         doThrow(new BadRequestException("Bad request - data in wrong format"))
                 .when(insolvencyService).processInsolvency(anyString(), anyString(),
                         isA(InternalCompanyInsolvency.class));
 
-        mockMvc.perform(put(url)
+        mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .content(gson.toJson(request)))
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @DisplayName("Insolvency PUT request - MethodNotAllowed status code 405")
+    public void callInsolvencyPutRequestMethodNotAllowed() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        doThrow(new MethodNotAllowedException(String.format("Method Not Allowed - unsuccessful call to %s endpoint", URL)))
+                .when(insolvencyService).processInsolvency(anyString(), anyString(),
+                        isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .content(gson.toJson(request)))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
+    @DisplayName("Insolvency PUT request - InternalServerError status code 500")
+    public void callInsolvencyPutRequestInternalServerError() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        doThrow(new InternalServerErrorException("Internal Server Error - unexpected error"))
+                .when(insolvencyService).processInsolvency(anyString(), anyString(),
+                        isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .content(gson.toJson(request)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("Insolvency PUT request - ServiceUnavailable status code 503")
+    public void callInsolvencyPutRequestServiceUnavailable() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        doThrow(new ServiceUnavailableException("Service Unavailable - connection issues"))
+                .when(insolvencyService).processInsolvency(anyString(), anyString(),
+                        isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .content(gson.toJson(request)))
+                .andExpect(status().isServiceUnavailable());
+    }
 }
