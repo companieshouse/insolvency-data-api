@@ -36,7 +36,8 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<Object> handleException(Exception ex, WebRequest request) {
-        logger.error(String.format("Unexpected exception, response code: %s", HttpStatus.INTERNAL_SERVER_ERROR), ex);
+        logger.error(String.format("Unexpected exception, response code: %s",
+                HttpStatus.INTERNAL_SERVER_ERROR), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("timestamp", LocalDateTime.now());
@@ -54,7 +55,8 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {IllegalArgumentException.class})
     public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
-        logger.error(String.format("Resource not found, response code: %s", HttpStatus.NOT_FOUND), ex);
+        logger.error(String.format("Resource not found, response code: %s",
+                HttpStatus.NOT_FOUND), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("timestamp", LocalDateTime.now());
@@ -92,7 +94,8 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {MethodNotAllowedException.class})
     public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex,
                                                                   WebRequest request) {
-        logger.error(String.format("Unable to process the request, response code: %s", HttpStatus.METHOD_NOT_ALLOWED), ex);
+        logger.error(String.format("Unable to process the request, response code: %s",
+                HttpStatus.METHOD_NOT_ALLOWED), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("timestamp", LocalDateTime.now());
@@ -112,7 +115,8 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {ServiceUnavailableException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
                                                                     WebRequest request) {
-        logger.error(String.format("Service unavailable, response code: %s", HttpStatus.SERVICE_UNAVAILABLE), ex);
+        logger.error(String.format("Service unavailable, response code: %s",
+                HttpStatus.SERVICE_UNAVAILABLE), ex);
 
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("timestamp", LocalDateTime.now());
