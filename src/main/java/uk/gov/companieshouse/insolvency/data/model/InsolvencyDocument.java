@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.model;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
@@ -18,8 +16,9 @@ public class InsolvencyDocument {
 
     private final Updated updated;
 
-    @Version
-    private Long version;
+    // Temporary removed as was creating issues during update
+    //    @Version
+    //    private Long version;
 
     /**
      * Instantiate company insolvency document.
