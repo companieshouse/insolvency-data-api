@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
@@ -29,8 +29,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
 
     /**
      * Insolvency service to store insolvency data onto mongodb and call chs kafka endpoint.
-     *
-     * @param logger               the logger
+     *  @param logger               the logger
      * @param insolvencyRepository mongodb repository
      * @param insolvencyApiService chs-kafka api service
      */
@@ -46,23 +45,53 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                                   InternalCompanyInsolvency companyInsolvency) {
         InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
                 companyNumber, companyInsolvency);
+        boolean savedToDb = false;
 
         try {
-            insolvencyRepository.save(insolvencyDocument);
+
+            Optional<InsolvencyDocument> insolvencyDocumentFromDbOptional =
+                    insolvencyRepository.findById(companyNumber);
+
+            if (insolvencyDocumentFromDbOptional.isPresent()) {
+                OffsetDateTime dateFromBodyRequest = companyInsolvency
+                        .getInternalData().getDeltaAt();
+                InsolvencyDocument insolvencyDocumentFromDb =
+                        insolvencyDocumentFromDbOptional.get();
+
+                String updatedAtFromDbStr = insolvencyDocumentFromDb
+                        .getUpdated().getAt();
+
+                OffsetDateTime updatedAtFromDb = OffsetDateTime.parse(updatedAtFromDbStr);
+
+                if (dateFromBodyRequest.isAfter(updatedAtFromDb)) {
+                    insolvencyRepository.save(insolvencyDocument);
+                    savedToDb = true;
+                    logger.info(String.format(
+                            "Company insolvency collection updated successfully "
+                                    + "for company number %s", companyNumber));
+                } else {
+                    logger.info("Insolvency not persisted as the record provided is older"
+                            + " than the one already stored.");
+                }
+            } else {
+                insolvencyRepository.save(insolvencyDocument);
+                savedToDb = true;
+                logger.info(String.format(
+                        "Company insolvency collection inserted successfully for company number %s",
+                        companyNumber));
+            }
         } catch (IllegalArgumentException illegalArgumentEx) {
             throw new BadRequestException(illegalArgumentEx.getMessage());
         } catch (DataAccessException dbException) {
             throw new ServiceUnavailableException(dbException.getMessage());
         }
 
-        logger.info(String.format(
-                "Company insolvency collection updated successfully for company number %s",
-                companyNumber));
+        if (savedToDb) {
+            insolvencyApiService.invokeChsKafkaApi(contextId, companyNumber);
 
-        insolvencyApiService.invokeChsKafkaApi(contextId, companyNumber);
-
-        logger.info(String.format("ChsKafka api invoked successfully for company number %s",
-                companyNumber));
+            logger.info(String.format("ChsKafka api invoked successfully for company number %s",
+                    companyNumber));
+        }
     }
 
     @Override
