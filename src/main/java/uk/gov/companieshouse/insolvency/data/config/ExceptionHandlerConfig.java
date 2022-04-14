@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -73,7 +74,7 @@ public class ExceptionHandlerConfig {
      * @param request request.
      * @return error response to return.
      */
-    @ExceptionHandler(value = {BadRequestException.class, DateTimeParseException.class})
+    @ExceptionHandler(value = {BadRequestException.class, DateTimeParseException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<Object> handleBadRequestException(Exception ex, WebRequest request) {
         logger.error(String.format("Bad request, response code: %s", HttpStatus.BAD_REQUEST), ex);
 
