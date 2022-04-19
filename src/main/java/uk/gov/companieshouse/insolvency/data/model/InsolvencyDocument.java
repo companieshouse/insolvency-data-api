@@ -1,8 +1,10 @@
 package uk.gov.companieshouse.insolvency.data.model;
 
+import java.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.format.annotation.DateTimeFormat;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 
 @Document(collection = "company_insolvency")
@@ -14,7 +16,20 @@ public class InsolvencyDocument {
     @Field("data")
     private CompanyInsolvency companyInsolvency;
 
-    private Updated updated;
+    @Field("delta_at")
+    @DateTimeFormat(
+            iso = DateTimeFormat.ISO.DATE
+    )
+    private LocalDateTime deltaAt;
+
+    @Field("updated_at")
+    @DateTimeFormat(
+            iso = DateTimeFormat.ISO.DATE
+    )
+    private LocalDateTime updatedAt;
+
+    @Field("updated_by")
+    private String updatedBy;
 
     // Temporary removed as was creating issues during update
     //    @Version
@@ -30,13 +45,17 @@ public class InsolvencyDocument {
      * Instantiate company insolvency document.
      * @param id the company number
      * @param companyInsolvency company insolvency data
-     * @param updated company insolvency updated details
      */
-    public InsolvencyDocument(String id, CompanyInsolvency companyInsolvency,
-                              Updated updated) {
+    public InsolvencyDocument(String id,
+                              CompanyInsolvency companyInsolvency,
+                              LocalDateTime deltaAt,
+                              LocalDateTime updatedAt,
+                              String updatedBy) {
         this.id = id;
         this.companyInsolvency = companyInsolvency;
-        this.updated = updated;
+        this.deltaAt = deltaAt;
+        this.updatedAt = updatedAt;
+        this.updatedBy = updatedBy;
     }
 
     public String getId() {
@@ -47,7 +66,27 @@ public class InsolvencyDocument {
         return companyInsolvency;
     }
 
-    public Updated getUpdated() {
-        return updated;
+    public LocalDateTime getDeltaAt() {
+        return deltaAt;
+    }
+
+    public void setDeltaAt(LocalDateTime deltaAt) {
+        this.deltaAt = deltaAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }

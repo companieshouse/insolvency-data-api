@@ -2,6 +2,8 @@ package uk.gov.companieshouse.insolvency.data.steps;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +23,6 @@ import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.config.CucumberContext;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
-import uk.gov.companieshouse.insolvency.data.model.Updated;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,10 +53,8 @@ public class InsolvencySteps {
         InternalCompanyInsolvency companyInsolvency = objectMapper.readValue(file, InternalCompanyInsolvency.class);
 
         InternalData internalData = companyInsolvency.getInternalData();
-        Updated updated = new Updated(internalData.getDeltaAt().toString(),
-                internalData.getUpdatedBy(), "company-insolvency");
         InsolvencyDocument insolvencyDocument = new InsolvencyDocument(companyNumber,
-                companyInsolvency.getExternalData(), updated);
+                companyInsolvency.getExternalData(), internalData.getDeltaAt().toLocalDateTime(), LocalDateTime.now(), internalData.getUpdatedBy());
 
         mongoTemplate.save(insolvencyDocument);
     }
@@ -109,6 +108,15 @@ public class InsolvencySteps {
 
         InsolvencyDocument expected = objectMapper.readValue(file, InsolvencyDocument.class);
 
+        InsolvencyDocument actualDocument = actual.get();
+
+        // Verify that the time inserted is after the input
+        assertThat(actualDocument.getUpdatedAt()).isAfter(expected.getUpdatedAt());
+
+        // Matching both updatedAt since it will never match the output (Uses now time)
+        LocalDateTime replacedLocalDateTime = LocalDateTime.now();
+        expected.setUpdatedAt(replacedLocalDateTime);
+        actualDocument.setUpdatedAt(replacedLocalDateTime);
         verifyPutData(actual.get(), expected);
     }
 
@@ -131,8 +139,9 @@ public class InsolvencySteps {
 
         assertThat(actualCompanyInsolvency.getCases()).isEqualTo(expectedCompanyInsolvency.getCases());
         assertThat(actual.getId()).isEqualTo(expected.getId());
-        assertThat(actual.getUpdated().getType()).isEqualTo(expected.getUpdated().getType());
-        assertThat(actual.getUpdated().getBy()).isEqualTo(expected.getUpdated().getBy());
+        assertThat(actual.getUpdatedAt()).isEqualTo(expected.getUpdatedAt());
+        assertThat(actual.getUpdatedBy()).isEqualTo(expected.getUpdatedBy());
+        assertThat(actual.getDeltaAt()).isEqualTo(expected.getDeltaAt());
     }
 
 }

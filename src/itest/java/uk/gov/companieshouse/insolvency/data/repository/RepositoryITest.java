@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.repository;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
@@ -15,7 +16,6 @@ import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
-import uk.gov.companieshouse.insolvency.data.model.Updated;
 
 @Testcontainers
 @DataMongoTest(excludeAutoConfiguration = EmbeddedMongoAutoConfiguration.class)
@@ -46,12 +46,10 @@ public class RepositoryITest extends AbstractMongoConfig {
     companyInsolvency.setInternalData(internalData);
 
     CompanyInsolvency externalData = new CompanyInsolvency();
-    Updated updated = new Updated(internalData.getDeltaAt().toString(), internalData.getUpdatedBy(),
-            "company-insolvency");
     companyInsolvency.setExternalData(externalData);
 
     externalData.setEtag(GenerateEtagUtil.generateEtag());
-    return new InsolvencyDocument(companyNumber, externalData, updated);
+    return new InsolvencyDocument(companyNumber, externalData, internalData.getDeltaAt().toLocalDateTime(), LocalDateTime.now(), internalData.getUpdatedBy());
   }
 
   @AfterAll

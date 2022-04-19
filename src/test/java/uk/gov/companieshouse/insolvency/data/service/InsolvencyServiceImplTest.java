@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
@@ -19,7 +20,6 @@ import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
-import uk.gov.companieshouse.insolvency.data.model.Updated;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -66,8 +66,7 @@ class InsolvencyServiceImplTest {
     @Test
     void when_insolvency_number_is_given_then_return_company_insolvency_information() {
         String companyNumber = "234234";
-        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(),
-                new Updated("at", "by", "type"));
+        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), LocalDateTime.now(), LocalDateTime.now(), "123");
         Mockito.when(repository.findById("234234")).thenReturn(Optional.of(document));
 
         CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency("234234");
