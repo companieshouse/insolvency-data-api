@@ -64,13 +64,13 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                 InsolvencyDocument insolvencyDocumentFromDb =
                         insolvencyDocumentFromDbOptional.get();
 
-                LocalDateTime updatedAtFromDbLocalDateTime = insolvencyDocumentFromDb
-                        .getUpdatedAt();
+                LocalDateTime deltaAtFromDbLocalDateTime = insolvencyDocumentFromDb
+                        .getDeltaAt();
 
-                OffsetDateTime updatedAtFromDb =
-                        OffsetDateTime.of(updatedAtFromDbLocalDateTime, ZoneOffset.UTC);
+                OffsetDateTime deltaAtFromDb =
+                        OffsetDateTime.of(deltaAtFromDbLocalDateTime, ZoneOffset.UTC);
 
-                if (dateFromBodyRequest.isAfter(updatedAtFromDb)) {
+                if (dateFromBodyRequest.isAfter(deltaAtFromDb)) {
                     insolvencyRepository.save(insolvencyDocument);
                     savedToDb = true;
                     logger.info(String.format(
