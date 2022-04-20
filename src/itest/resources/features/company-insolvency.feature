@@ -23,8 +23,21 @@ Feature: Process company insolvency information
 
     Examples:
       | data                                             | response_code |
-      | invalid_payload                                  | 400           |
-      | invalid_payload_NPE                              | 500           |
+      | bad_request_payload                              | 400           |
+      | internal_server_error_payload                    | 500           |
+
+  Scenario Outline: Processing company insolvency information unsuccessfully but saves to database
+
+    Given Insolvency data api service is running
+    When CHS kafka API service is unavailable
+    And I send PUT request with payload "<data>" file
+    Then I should receive 503 status code
+    And the expected result should match "<result>" file
+    And the CHS Kafka API is invoked successfully
+
+    Examples:
+      | data                             | result |
+      | case_type_compulsory_liquidation | case_type_compulsory_liquidation_output |
 
   Scenario Outline: Retrieve company insolvency information successfully
 

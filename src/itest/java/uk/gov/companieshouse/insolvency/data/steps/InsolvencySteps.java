@@ -125,6 +125,12 @@ public class InsolvencySteps {
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
+    @When("CHS kafka API service is unavailable")
+    public void chs_kafka_service_unavailable() throws IOException {
+        doThrow(ServiceUnavailableException.class)
+                .when(insolvencyApiService).invokeChsKafkaApi(anyString(), anyString());
+    }
+
     @Then("I should receive {int} status code")
     public void i_should_receive_status_code(Integer statusCode) {
         int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");
