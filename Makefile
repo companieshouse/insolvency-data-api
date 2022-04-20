@@ -46,7 +46,7 @@ test-unit:
 .PHONY: test-integration
 test-integration:
 	@# Help: Run integration tests
-	mvn integration-test -Dskip.unit.tests=true
+	mvn integration-test verify -Dskip.unit.tests=true
 
 .PHONY: run-local
 run-local: 
