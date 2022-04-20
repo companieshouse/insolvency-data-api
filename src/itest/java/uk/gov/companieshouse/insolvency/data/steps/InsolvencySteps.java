@@ -13,22 +13,33 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.*;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
+import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.config.CucumberContext;
+import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
+import uk.gov.companieshouse.insolvency.data.model.Updated;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 public class InsolvencySteps {
 
     private String companyNumber;
+    private String contextId;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -41,6 +52,9 @@ public class InsolvencySteps {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @Autowired
+    public InsolvencyApiService insolvencyApiService;
 
     @Before
     public void dbCleanUp(){
@@ -77,7 +91,9 @@ public class InsolvencySteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("x-request-id", "5234234234");
+
+        this.contextId = "5234234234";
+        headers.set("x-request-id", this.contextId);
 
         HttpEntity request = new HttpEntity(companyInsolvency, headers);
         String uri = "/company/{company_number}/insolvency";
@@ -88,16 +104,24 @@ public class InsolvencySteps {
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
-    @When("I send DELETE request with company number {string}")
-    public void i_send_delete_request_with_company_number(String companyNumber) throws IOException {
-        String uri = "/company/{company_number}/insolvency";
+    @When("I send PUT request with raw payload {string} file")
+    public void i_send_put_request_with_raw_payload(String string) throws IOException {
+        File file = new ClassPathResource("/json/input/" + string + ".json").getFile();
+        String raw_payload = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("x-request-id", "5234234234");
-        var request = new HttpEntity<>(null, headers);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
+        this.contextId = "5234234234";
+        headers.set("x-request-id", this.contextId);
 
+        HttpEntity request = new HttpEntity(raw_payload, headers);
+        String uri = "/company/{company_number}/insolvency";
+        String companyNumber = "CH5324324";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
+
+        this.companyNumber = companyNumber;
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
@@ -144,6 +168,22 @@ public class InsolvencySteps {
 
         assertThat(expected.getStatus()).isEqualTo(actual.getStatus());
         assertThat(expected.getCases()).isEqualTo(actual.getCases());
+    }
+
+    @Then("the CHS Kafka API is invoked successfully")
+    public void chs_kafka_api_invoked() throws IOException {
+        verify(insolvencyApiService).invokeChsKafkaApi(eq(this.contextId), eq(companyNumber));
+    }
+
+    @Then("the CHS Kafka API is not invoked")
+    public void chs_kafka_api_not_invoked() throws IOException {
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(any(), any());
+    }
+
+    @Then("nothing is persisted in the database")
+    public void nothing_persisted_database() {
+        List<InsolvencyDocument> insolvencyDocuments = insolvencyRepository.findAll();
+        Assertions.assertThat(insolvencyDocuments).hasSize(0);
     }
 
     private void verifyPutData(InsolvencyDocument actual, InsolvencyDocument expected) {
