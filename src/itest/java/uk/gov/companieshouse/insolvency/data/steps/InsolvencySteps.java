@@ -20,6 +20,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.*;
+import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
@@ -35,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig.mongoDBContainer;
 
 public class InsolvencySteps {
 
@@ -58,6 +60,9 @@ public class InsolvencySteps {
 
     @Before
     public void dbCleanUp(){
+        if (!mongoDBContainer.isRunning()) {
+            mongoDBContainer.start();
+        }
         insolvencyRepository.deleteAll();
     }
 
@@ -71,6 +76,11 @@ public class InsolvencySteps {
                 companyInsolvency.getExternalData(), internalData.getDeltaAt().toLocalDateTime(), LocalDateTime.now(), internalData.getUpdatedBy());
 
         mongoTemplate.save(insolvencyDocument);
+    }
+
+    @Given("the insolvency database is down")
+    public void the_insolvency_db_is_down() {
+        mongoDBContainer.stop();
     }
 
     @When("I send GET request with company number {string}")
