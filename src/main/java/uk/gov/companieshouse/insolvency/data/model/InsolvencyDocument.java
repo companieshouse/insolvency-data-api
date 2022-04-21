@@ -12,13 +12,19 @@ public class InsolvencyDocument {
     private String id;
 
     @Field("data")
-    private final CompanyInsolvency companyInsolvency;
+    private CompanyInsolvency companyInsolvency;
 
-    private final Updated updated;
+    private Updated updated;
 
     // Temporary removed as was creating issues during update
     //    @Version
     //    private Long version;
+
+    /**
+     * Default constructor.
+     */
+    public InsolvencyDocument() {
+    }
 
     /**
      * Instantiate company insolvency document.

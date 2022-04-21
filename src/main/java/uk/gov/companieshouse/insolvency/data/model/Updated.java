@@ -1,14 +1,18 @@
 package uk.gov.companieshouse.insolvency.data.model;
 
-import java.time.OffsetDateTime;
-
 public class Updated {
 
-    private final String at;
+    private String at;
 
-    private final String by;
+    private String by;
 
-    private final String type;
+    private String type;
+
+    /**
+     * Default constructor.
+     */
+    public Updated() {
+    }
 
     /**
      * Instantiate company insolvency updated data.
