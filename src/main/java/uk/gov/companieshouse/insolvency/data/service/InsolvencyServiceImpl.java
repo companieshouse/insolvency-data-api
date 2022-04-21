@@ -116,7 +116,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     @Override
     public void deleteInsolvency(String contextId, String companyNumber) {
         logger.info(String.format(
-                "Company insolvency deleted successfully for company number %s",
+                "Company insolvency delete called for company number %s",
                 companyNumber));
         try {
             insolvencyRepository.deleteById(companyNumber);
