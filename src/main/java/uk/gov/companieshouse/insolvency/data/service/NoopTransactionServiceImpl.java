@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,7 +16,6 @@ import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
-import uk.gov.companieshouse.insolvency.data.model.Updated;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -58,12 +59,13 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                 InsolvencyDocument insolvencyDocumentFromDb =
                         insolvencyDocumentFromDbOptional.get();
 
-                String updatedAtFromDbStr = insolvencyDocumentFromDb
-                        .getUpdated().getAt();
+                LocalDateTime deltaAtFromDbStr = insolvencyDocumentFromDb
+                        .getDeltaAt();
 
-                OffsetDateTime updatedAtFromDb = OffsetDateTime.parse(updatedAtFromDbStr);
+                OffsetDateTime deltaAtFromDb =
+                        OffsetDateTime.of(deltaAtFromDbStr, ZoneOffset.UTC);
 
-                if (dateFromBodyRequest.isAfter(updatedAtFromDb)) {
+                if (dateFromBodyRequest.isAfter(deltaAtFromDb)) {
                     insolvencyRepository.save(insolvencyDocument);
                     savedToDb = true;
                     logger.info(String.format(
@@ -110,12 +112,14 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                                                      InternalCompanyInsolvency insolvencyApi) {
         InternalData internalData = insolvencyApi.getInternalData();
         CompanyInsolvency externalData = insolvencyApi.getExternalData();
-        Updated updated = new Updated(internalData.getDeltaAt().toString(),
-                internalData.getUpdatedBy(), "company-insolvency");
 
         //Generating new Etag
         externalData.setEtag(GenerateEtagUtil.generateEtag());
-        return new InsolvencyDocument(companyNumber, externalData, updated);
+        return new InsolvencyDocument(companyNumber,
+                externalData,
+                internalData.getDeltaAt().toLocalDateTime(),
+                LocalDateTime.now(),
+                internalData.getUpdatedBy());
     }
 
 }
