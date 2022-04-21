@@ -3,6 +3,7 @@ package uk.gov.companieshouse.insolvency.data.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -69,6 +70,25 @@ public class InsolvencyController {
                 companyNumber);
 
         return ResponseEntity.status(HttpStatus.OK).body(companyInsolvency);
+    }
+
+    /**
+     * Retrieve company insolvency information for a company number.
+     *
+     * @param  companyNumber  the company number for insolvency
+     * @return  {@link CompanyInsolvency} return company insolvency information
+     */
+    @DeleteMapping("/company/{company_number}/insolvency")
+    public ResponseEntity<Void> insolvency(
+            @RequestHeader("x-request-id") String contextId,
+            @PathVariable("company_number") String companyNumber) {
+        logger.info(String.format(
+                "Deleting company insolvency information for company number %s",
+                companyNumber));
+
+        insolvencyService.deleteInsolvency(contextId, companyNumber);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 }

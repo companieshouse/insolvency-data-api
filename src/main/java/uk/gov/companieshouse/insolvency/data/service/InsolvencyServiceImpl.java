@@ -113,6 +113,18 @@ public class InsolvencyServiceImpl implements InsolvencyService {
         return insolvencyDocument.getCompanyInsolvency();
     }
 
+    @Override
+    public void deleteInsolvency(String contextId, String companyNumber) {
+        logger.info(String.format(
+                "Company insolvency deleted successfully for company number %s",
+                companyNumber));
+        try {
+            insolvencyRepository.deleteById(companyNumber);
+        } catch (DataAccessException dbException) {
+            throw new ServiceUnavailableException(dbException.getMessage());
+        }
+    }
+
     private InsolvencyDocument mapInsolvencyDocument(String companyNumber,
                                                      InternalCompanyInsolvency insolvencyApi) {
         InternalData internalData = insolvencyApi.getInternalData();
