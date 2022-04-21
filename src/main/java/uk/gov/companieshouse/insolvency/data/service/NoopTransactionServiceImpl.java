@@ -60,7 +60,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                         insolvencyDocumentFromDbOptional.get();
 
                 LocalDateTime deltaAtFromDbStr = insolvencyDocumentFromDb
-                        .getUpdatedAt();
+                        .getDeltaAt();
 
                 OffsetDateTime deltaAtFromDb =
                         OffsetDateTime.of(deltaAtFromDbStr, ZoneOffset.UTC);

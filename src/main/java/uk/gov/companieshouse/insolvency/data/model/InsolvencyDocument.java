@@ -18,13 +18,13 @@ public class InsolvencyDocument {
 
     @Field("delta_at")
     @DateTimeFormat(
-            iso = DateTimeFormat.ISO.DATE
+            iso = DateTimeFormat.ISO.DATE_TIME
     )
     private LocalDateTime deltaAt;
 
     @Field("updated_at")
     @DateTimeFormat(
-            iso = DateTimeFormat.ISO.DATE
+            iso = DateTimeFormat.ISO.DATE_TIME
     )
     private LocalDateTime updatedAt;
 
