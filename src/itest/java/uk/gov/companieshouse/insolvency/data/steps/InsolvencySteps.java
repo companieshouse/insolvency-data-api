@@ -2,6 +2,7 @@ package uk.gov.companieshouse.insolvency.data.steps;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -29,7 +30,6 @@ import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.config.CucumberContext;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
-import uk.gov.companieshouse.insolvency.data.model.Updated;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,7 +73,11 @@ public class InsolvencySteps {
 
         InternalData internalData = companyInsolvency.getInternalData();
         InsolvencyDocument insolvencyDocument = new InsolvencyDocument(companyNumber,
+<<<<<<< HEAD
                 companyInsolvency.getExternalData(), internalData.getDeltaAt().toLocalDateTime(), LocalDateTime.now(), internalData.getUpdatedBy());
+=======
+                companyInsolvency.getExternalData(), internalData.getDeltaAt().toLocalDateTime(),  LocalDateTime.now(), internalData.getUpdatedBy());
+>>>>>>> 9913714 (Updated based on PR comments)
 
         mongoTemplate.save(insolvencyDocument);
     }
