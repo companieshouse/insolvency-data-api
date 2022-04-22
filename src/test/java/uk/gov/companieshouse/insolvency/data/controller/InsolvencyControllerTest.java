@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -164,5 +165,16 @@ public class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .content(gson.toJson(request)))
                 .andExpect(status().isServiceUnavailable());
+    }
+
+    @Test
+    @DisplayName("Insolvency DELETE request")
+    public void callInsolvencyDeleteRequest() throws Exception {
+        doNothing().when(insolvencyService).deleteInsolvency(anyString(), anyString());
+
+        mockMvc.perform(delete(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342"))
+                .andExpect(status().isOk());
     }
 }

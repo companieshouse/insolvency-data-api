@@ -88,6 +88,19 @@ public class InsolvencySteps {
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
+    @When("I send DELETE request with company number {string}")
+    public void i_send_delete_request_with_company_number(String companyNumber) throws IOException {
+        String uri = "/company/{company_number}/insolvency";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-request-id", "5234234234");
+        var request = new HttpEntity<>(null, headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
     @Then("I should receive {int} status code")
     public void i_should_receive_status_code(Integer statusCode) {
         int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");

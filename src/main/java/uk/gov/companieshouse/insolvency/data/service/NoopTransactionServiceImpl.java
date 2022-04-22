@@ -108,6 +108,13 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
         return insolvencyDocument.getCompanyInsolvency();
     }
 
+    @Override
+    public void deleteInsolvency(String contextId, String companyNumber) {
+        logger.info(String.format(
+                "Company insolvency delete called for company number %s",
+                companyNumber));
+    }
+
     private InsolvencyDocument mapInsolvencyDocument(String companyNumber,
                                                      InternalCompanyInsolvency insolvencyApi) {
         InternalData internalData = insolvencyApi.getInternalData();

@@ -18,4 +18,5 @@ public interface InsolvencyService {
 
     CompanyInsolvency retrieveCompanyInsolvency(String companyNumber);
 
+    void deleteInsolvency(String contextId, String companyNumber);
 }

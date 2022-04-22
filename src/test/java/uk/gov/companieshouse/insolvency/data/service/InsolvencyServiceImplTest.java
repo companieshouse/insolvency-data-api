@@ -23,9 +23,9 @@ import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 import uk.gov.companieshouse.logging.Logger;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class InsolvencyServiceImplTest {
@@ -48,7 +48,7 @@ class InsolvencyServiceImplTest {
 
         underTest.processInsolvency("436534543", "CH363453", companyInsolvency);
 
-        Mockito.verify(repository, Mockito.times(1)).save(Mockito.any());
+        verify(repository, Mockito.times(1)).save(Mockito.any());
     }
 
     @Test
@@ -72,7 +72,7 @@ class InsolvencyServiceImplTest {
         CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency("234234");
 
         Assertions.assertThat(companyInsolvency).isNotNull();
-        Mockito.verify(repository, Mockito.times(1)).findById(Mockito.any());
+        verify(repository, Mockito.times(1)).findById(Mockito.any());
     }
 
     @Test
@@ -92,7 +92,18 @@ class InsolvencyServiceImplTest {
         Assert.assertThrows(RuntimeException.class, () -> underTest.retrieveCompanyInsolvency
                 ("CH4000056"));
 
-        Mockito.verify(repository, Mockito.times(1)).findById(Mockito.any());
+        verify(repository, Mockito.times(1)).findById(Mockito.any());
+    }
+
+    @Test
+    void when_insolvency_number_is_given_then_delete_company_insolvency_successfully() {
+        String companyNumber = "CH363453";
+
+        underTest.deleteInsolvency("436534543", companyNumber);
+
+        verify(logger, Mockito.times(1)).info(
+                "Company insolvency delete called for company number " + companyNumber
+        );
     }
 
 
