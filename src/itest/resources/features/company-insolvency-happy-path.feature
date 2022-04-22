@@ -6,6 +6,7 @@ Feature: Process company insolvency information
     When I send PUT request with payload "<data>" file
     Then I should receive 200 status code
     And the expected result should match "<result>" file
+    And the CHS Kafka API is invoked successfully
 
     Examples:
       | data                             | result                                  |
@@ -23,14 +24,3 @@ Feature: Process company insolvency information
     Examples:
       | companyNumber | result                     |
       | CH3634545     | retrieve_by_company_number |
-
-  Scenario Outline: Delete company insolvency information successfully
-
-    Given Insolvency data api service is running
-    And the insolvency information exists for "<companyNumber>"
-    When I send DELETE request with company number "<companyNumber>"
-    Then I should receive 200 status code
-
-    Examples:
-      | companyNumber |
-      | CH3634545     |
