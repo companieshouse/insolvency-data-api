@@ -113,11 +113,6 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
         logger.info(String.format(
                 "Company insolvency delete called for company number %s",
                 companyNumber));
-        try {
-            insolvencyRepository.deleteById(companyNumber);
-        } catch (DataAccessException dbException) {
-            throw new ServiceUnavailableException(dbException.getMessage());
-        }
     }
 
     private InsolvencyDocument mapInsolvencyDocument(String companyNumber,

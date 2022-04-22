@@ -98,21 +98,12 @@ class InsolvencyServiceImplTest {
     @Test
     void when_insolvency_number_is_given_then_delete_company_insolvency_successfully() {
         String companyNumber = "CH363453";
-        doNothing().when(repository).deleteById(companyNumber);
 
         underTest.deleteInsolvency("436534543", companyNumber);
 
-        verify(repository, Mockito.times(1)).deleteById(Mockito.any());
-    }
-
-    @Test
-    void when_delete_and_connection_issue_in_db_then_throw_service_unavailable_exception() {
-        doThrow(new DataAccessResourceFailureException("Connection broken"))
-                .when(repository)
-                .deleteById("CH363453");
-
-        assertThrows(ServiceUnavailableException.class, () ->
-                underTest.deleteInsolvency("436534543", "CH363453"));
+        verify(logger, Mockito.times(1)).info(
+                "Company insolvency delete called for company number " + companyNumber
+        );
     }
 
 
