@@ -33,14 +33,3 @@ Feature: Error and retry scenarios for company insolvency
     When I send PUT request with payload "case_type_compulsory_liquidation" file
     Then I should receive 503 status code
     And the CHS Kafka API is not invoked
-
-  Scenario Outline: Delete company insolvency information successfully
-
-    Given Insolvency data api service is running
-    And the insolvency information exists for "<companyNumber>"
-    When I send DELETE request with company number "<companyNumber>"
-    Then I should receive 200 status code
-
-    Examples:
-      | companyNumber |
-      | CH3634545     |

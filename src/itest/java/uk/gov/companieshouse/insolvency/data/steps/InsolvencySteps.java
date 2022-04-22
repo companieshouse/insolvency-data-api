@@ -73,11 +73,10 @@ public class InsolvencySteps {
 
         InternalData internalData = companyInsolvency.getInternalData();
         InsolvencyDocument insolvencyDocument = new InsolvencyDocument(companyNumber,
-<<<<<<< HEAD
-                companyInsolvency.getExternalData(), internalData.getDeltaAt().toLocalDateTime(), LocalDateTime.now(), internalData.getUpdatedBy());
-=======
-                companyInsolvency.getExternalData(), internalData.getDeltaAt().toLocalDateTime(),  LocalDateTime.now(), internalData.getUpdatedBy());
->>>>>>> 9913714 (Updated based on PR comments)
+                companyInsolvency.getExternalData(),
+                internalData.getDeltaAt().toLocalDateTime(),
+                LocalDateTime.now(),
+                internalData.getUpdatedBy());
 
         mongoTemplate.save(insolvencyDocument);
     }
@@ -143,6 +142,19 @@ public class InsolvencySteps {
     public void chs_kafka_service_unavailable() throws IOException {
         doThrow(ServiceUnavailableException.class)
                 .when(insolvencyApiService).invokeChsKafkaApi(anyString(), anyString());
+    }
+
+    @When("I send DELETE request with company number {string}")
+    public void i_send_delete_request_with_company_number(String companyNumber) throws IOException {
+        String uri = "/company/{company_number}/insolvency";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-request-id", "5234234234");
+        var request = new HttpEntity<>(null, headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
     @Then("I should receive {int} status code")
