@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
@@ -96,16 +97,30 @@ class InsolvencyServiceImplTest {
     }
 
     @Test
-    void when_insolvency_number_is_given_then_delete_company_insolvency_successfully() {
+    void when_company_number_doesnt_exist_then_throws_EmptyResultDataAccessException_error() {
         String companyNumber = "CH363453";
+        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.empty());
 
-        underTest.deleteInsolvency("436534543", companyNumber);
+        Assert.assertThrows(EmptyResultDataAccessException.class, () ->
+                underTest.deleteInsolvency(companyNumber, companyNumber));
 
         verify(logger, Mockito.times(1)).info(
-                "Company insolvency delete called for company number " + companyNumber
+                "Company insolvency doesn't exist for company number " + companyNumber
         );
     }
 
+    @Test
+    void when_company_number_exist_then_finishes_successfully() {
+        String companyNumber = "CH363453";
+        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), LocalDateTime.now(), LocalDateTime.now(), "123");
+        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
+
+        underTest.deleteInsolvency(companyNumber, companyNumber);
+        verify(logger, Mockito.times(1)).info(
+                "Company insolvency delete called for company number " + companyNumber
+        );
+        verify(repository, Mockito.times(1)).deleteById(Mockito.any());
+    }
 
     private InternalCompanyInsolvency createInternalCompanyInsolvency() {
         InternalCompanyInsolvency companyInsolvency = new InternalCompanyInsolvency();

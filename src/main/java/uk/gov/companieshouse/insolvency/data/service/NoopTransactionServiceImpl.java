@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
@@ -109,7 +110,19 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
     }
 
     @Override
-    public void deleteInsolvency(String contextId, String companyNumber) {
+    public void deleteInsolvency(String contextId, String companyNumber)
+            throws EmptyResultDataAccessException {
+        Optional<InsolvencyDocument> insolvencyDocumentOptional =
+                insolvencyRepository.findById(companyNumber);
+
+        if (insolvencyDocumentOptional.isEmpty()) {
+            logger.info(String.format(
+                    "Company insolvency doesn't exist for company number %s",
+                    companyNumber));
+            throw new EmptyResultDataAccessException(0);
+        }
+
+        insolvencyRepository.deleteById(companyNumber);
         logger.info(String.format(
                 "Company insolvency delete called for company number %s",
                 companyNumber));
