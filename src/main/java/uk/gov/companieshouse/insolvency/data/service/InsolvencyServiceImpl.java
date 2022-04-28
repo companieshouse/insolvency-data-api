@@ -115,9 +115,23 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
     @Override
     public void deleteInsolvency(String contextId, String companyNumber) {
-        logger.info(String.format(
-                "Company insolvency delete called for company number %s",
-                companyNumber));
+        try {
+            Optional<InsolvencyDocument> insolvencyDocumentOptional =
+                    insolvencyRepository.findById(companyNumber);
+
+            if (insolvencyDocumentOptional.isEmpty()) {
+                throw new IllegalArgumentException(String.format(
+                        "Company insolvency doesn't exist for company number %s",
+                        companyNumber));
+            }
+
+            insolvencyRepository.deleteById(companyNumber);
+            logger.info(String.format(
+                    "Company insolvency delete called for company number %s",
+                    companyNumber));
+        } catch (DataAccessException dbException) {
+            throw new ServiceUnavailableException(dbException.getMessage());
+        }
     }
 
     private InsolvencyDocument mapInsolvencyDocument(String companyNumber,

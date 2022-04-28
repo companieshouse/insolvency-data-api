@@ -85,9 +85,7 @@ public class InsolvencyController {
         logger.info(String.format(
                 "Deleting company insolvency information for company number %s",
                 companyNumber));
-
         insolvencyService.deleteInsolvency(contextId, companyNumber);
-
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

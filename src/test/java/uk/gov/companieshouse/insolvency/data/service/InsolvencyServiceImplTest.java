@@ -96,16 +96,30 @@ class InsolvencyServiceImplTest {
     }
 
     @Test
-    void when_insolvency_number_is_given_then_delete_company_insolvency_successfully() {
+    void when_company_number_doesnt_exist_then_throws_IllegalArgumentExceptionException_error() {
         String companyNumber = "CH363453";
+        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.empty());
 
-        underTest.deleteInsolvency("436534543", companyNumber);
+        Assert.assertThrows(IllegalArgumentException.class, () ->
+                underTest.deleteInsolvency(companyNumber, companyNumber));
 
+        verify(repository, Mockito.times(0)).deleteById(Mockito.any());
+        verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
+    }
+
+    @Test
+    void when_company_number_exist_then_finishes_successfully() {
+        String companyNumber = "CH363453";
+        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), LocalDateTime.now(), LocalDateTime.now(), "123");
+        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
+
+        underTest.deleteInsolvency(companyNumber, companyNumber);
         verify(logger, Mockito.times(1)).info(
                 "Company insolvency delete called for company number " + companyNumber
         );
+        verify(repository, Mockito.times(1)).deleteById(Mockito.any());
+        verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
     }
-
 
     private InternalCompanyInsolvency createInternalCompanyInsolvency() {
         InternalCompanyInsolvency companyInsolvency = new InternalCompanyInsolvency();
