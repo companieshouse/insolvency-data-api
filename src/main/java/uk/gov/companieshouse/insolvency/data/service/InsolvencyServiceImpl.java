@@ -8,7 +8,6 @@ import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.GenerateEtagUtil;
@@ -115,22 +114,24 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     }
 
     @Override
-    public void deleteInsolvency(String contextId, String companyNumber)
-            throws EmptyResultDataAccessException {
-        Optional<InsolvencyDocument> insolvencyDocumentOptional =
-                insolvencyRepository.findById(companyNumber);
+    public void deleteInsolvency(String contextId, String companyNumber) {
+        try {
+            Optional<InsolvencyDocument> insolvencyDocumentOptional =
+                    insolvencyRepository.findById(companyNumber);
 
-        if (insolvencyDocumentOptional.isEmpty()) {
+            if (insolvencyDocumentOptional.isEmpty()) {
+                throw new IllegalArgumentException(String.format(
+                        "Company insolvency doesn't exist for company number %s",
+                        companyNumber));
+            }
+
+            insolvencyRepository.deleteById(companyNumber);
             logger.info(String.format(
-                    "Company insolvency doesn't exist for company number %s",
+                    "Company insolvency delete called for company number %s",
                     companyNumber));
-            throw new EmptyResultDataAccessException(0);
+        } catch (DataAccessException dbException) {
+            throw new ServiceUnavailableException(dbException.getMessage());
         }
-
-        insolvencyRepository.deleteById(companyNumber);
-        logger.info(String.format(
-                "Company insolvency delete called for company number %s",
-                companyNumber));
     }
 
     private InsolvencyDocument mapInsolvencyDocument(String companyNumber,

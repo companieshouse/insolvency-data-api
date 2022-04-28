@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
@@ -97,16 +96,15 @@ class InsolvencyServiceImplTest {
     }
 
     @Test
-    void when_company_number_doesnt_exist_then_throws_EmptyResultDataAccessException_error() {
+    void when_company_number_doesnt_exist_then_throws_IllegalArgumentExceptionException_error() {
         String companyNumber = "CH363453";
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.empty());
 
-        Assert.assertThrows(EmptyResultDataAccessException.class, () ->
+        Assert.assertThrows(IllegalArgumentException.class, () ->
                 underTest.deleteInsolvency(companyNumber, companyNumber));
 
-        verify(logger, Mockito.times(1)).info(
-                "Company insolvency doesn't exist for company number " + companyNumber
-        );
+        verify(repository, Mockito.times(0)).deleteById(Mockito.any());
+        verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
     }
 
     @Test
@@ -120,6 +118,7 @@ class InsolvencyServiceImplTest {
                 "Company insolvency delete called for company number " + companyNumber
         );
         verify(repository, Mockito.times(1)).deleteById(Mockito.any());
+        verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
     }
 
     private InternalCompanyInsolvency createInternalCompanyInsolvency() {

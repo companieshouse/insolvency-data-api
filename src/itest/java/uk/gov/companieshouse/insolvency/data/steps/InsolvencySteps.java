@@ -81,11 +81,6 @@ public class InsolvencySteps {
         mongoTemplate.save(insolvencyDocument);
     }
 
-    @Given("insolvency information is not added to database")
-    public void the_insolvency_information_doesnt_exist() {
-        // Step doesn't need to do anything, just makes integration test clearer
-    }
-
     @Given("the insolvency database is down")
     public void the_insolvency_db_is_down() {
         mongoDBContainer.stop();

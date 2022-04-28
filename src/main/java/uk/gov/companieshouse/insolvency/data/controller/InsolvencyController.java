@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -86,11 +85,7 @@ public class InsolvencyController {
         logger.info(String.format(
                 "Deleting company insolvency information for company number %s",
                 companyNumber));
-        try {
-            insolvencyService.deleteInsolvency(contextId, companyNumber);
-        } catch (EmptyResultDataAccessException notFoundException) {
-            return ResponseEntity.notFound().build();
-        }
+        insolvencyService.deleteInsolvency(contextId, companyNumber);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

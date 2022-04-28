@@ -1,16 +1,14 @@
 Feature: Delete company insolvency information
 
 
-  Scenario: Delete company insolvency information successfully
+  Scenario Outline: Delete company insolvency information successfully
 
     Given Insolvency data api service is running
-    And the insolvency information exists for "CH3634545"
-    When I send DELETE request with company number "CH3634545"
-    Then I should receive 200 status code
+    And the insolvency information exists for "<company_number_created>"
+    When I send DELETE request with company number "<company_number_deleted>"
+    Then I should receive <response_code> status code
 
-  Scenario: Delete company insolvency information successfully
-
-    Given Insolvency data api service is running
-    And insolvency information is not added to database
-    When I send DELETE request with company number "CH3634545"
-    Then I should receive 404 status code
+    Examples:
+      | company_number_created             | company_number_deleted | response_code |
+      | CH3634545                          | CH3634545              | 200           |
+      | CH3634545                          | CH1234567              | 404           |
