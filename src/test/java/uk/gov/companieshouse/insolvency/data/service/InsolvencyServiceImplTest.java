@@ -23,7 +23,6 @@ import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 import uk.gov.companieshouse.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.*;
 
@@ -45,10 +44,13 @@ class InsolvencyServiceImplTest {
     @Test
     void when_insolvency_data_is_given_then_data_should_be_saved() {
         InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
+        String contextId = "436534543";
+        String companyNumber = "CH363453";
 
-        underTest.processInsolvency("436534543", "CH363453", companyInsolvency);
+        underTest.processInsolvency(contextId, companyNumber, companyInsolvency);
 
         verify(repository, Mockito.times(1)).save(Mockito.any());
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), eq(companyNumber), eq("changed"));
     }
 
     @Test
@@ -61,18 +63,22 @@ class InsolvencyServiceImplTest {
 
         Assert.assertThrows(ServiceUnavailableException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), anyString(), anyString());
+
     }
 
     @Test
     void when_insolvency_number_is_given_then_return_company_insolvency_information() {
         String companyNumber = "234234";
-        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), LocalDateTime.now(), LocalDateTime.now(), "123");
-        Mockito.when(repository.findById("234234")).thenReturn(Optional.of(document));
 
-        CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency("234234");
+        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), LocalDateTime.now(), LocalDateTime.now(), "123");
+        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
+
+        CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency(companyNumber);
 
         Assertions.assertThat(companyInsolvency).isNotNull();
         verify(repository, Mockito.times(1)).findById(Mockito.any());
+
     }
 
     @Test
@@ -85,6 +91,7 @@ class InsolvencyServiceImplTest {
 
         Assert.assertThrows(BadRequestException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -93,6 +100,7 @@ class InsolvencyServiceImplTest {
                 ("CH4000056"));
 
         verify(repository, Mockito.times(1)).findById(Mockito.any());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -105,20 +113,23 @@ class InsolvencyServiceImplTest {
 
         verify(repository, Mockito.times(0)).deleteById(Mockito.any());
         verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), anyString(), anyString());
     }
 
     @Test
     void when_company_number_exist_then_finishes_successfully() {
         String companyNumber = "CH363453";
+        String contextId = "1234";
         InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), LocalDateTime.now(), LocalDateTime.now(), "123");
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
 
-        underTest.deleteInsolvency(companyNumber, companyNumber);
+        underTest.deleteInsolvency(contextId, companyNumber);
         verify(logger, Mockito.times(1)).info(
                 "Company insolvency delete called for company number " + companyNumber
         );
         verify(repository, Mockito.times(1)).deleteById(Mockito.any());
         verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), eq(companyNumber), eq("deleted"));
     }
 
     private InternalCompanyInsolvency createInternalCompanyInsolvency() {

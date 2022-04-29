@@ -59,7 +59,7 @@ public class InsolvencyApiClientServiceTest {
         when(changedResourcePost.execute()).thenReturn(response);
 
         ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
-                "CH4000056");
+                "CH4000056", "changed");
 
         Assertions.assertThat(apiResponse).isNotNull();
 
@@ -80,7 +80,7 @@ public class InsolvencyApiClientServiceTest {
 
 
         Assert.assertThrows(RuntimeException.class, () -> insolvencyApiService.invokeChsKafkaApi
-                ("3245435", "CH4000056"));
+                ("3245435", "CH4000056", "changed"));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
@@ -104,7 +104,7 @@ public class InsolvencyApiClientServiceTest {
 
         Assert.assertThrows(exception,
                 () -> insolvencyApiService.invokeChsKafkaApi
-                        ("3245435", "CH4000056"));
+                        ("3245435", "CH4000056", "changed"));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
