@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = InsolvencyController.class)
 @ContextConfiguration(classes = {InsolvencyController.class, ExceptionHandlerConfig.class})
-public class InsolvencyControllerTest {
+class InsolvencyControllerTest {
     private static final String COMPANY_NUMBER = "02588581";
     private static final String URL = String.format("/company/%s/insolvency", COMPANY_NUMBER);
 
@@ -169,12 +169,74 @@ public class InsolvencyControllerTest {
 
     @Test
     @DisplayName("Insolvency DELETE request")
-    public void callInsolvencyDeleteRequest() throws Exception {
+    void callInsolvencyDeleteRequest() throws Exception {
         doNothing().when(insolvencyService).deleteInsolvency(anyString(), anyString());
 
         mockMvc.perform(delete(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Insolvency DELETE request - IllegalArgumentException status code 404 not found")
+    void callInsolvencyDeleteRequestIllegalArgument() throws Exception {
+        doThrow(new IllegalArgumentException())
+                .when(insolvencyService).deleteInsolvency(anyString(), anyString());
+
+        mockMvc.perform(delete(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Insolvency DELETE request - BadRequestException status code 400")
+    void callInsolvencyDeleteRequestBadRequest() throws Exception {
+        doThrow(new BadRequestException("Bad request - data in wrong format"))
+                .when(insolvencyService).deleteInsolvency(anyString(), anyString());
+
+        mockMvc.perform(delete(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Insolvency DELETE request - MethodNotAllowed status code 405")
+    void callInsolvencyDeleteRequestMethodNotAllowed() throws Exception {
+        doThrow(new MethodNotAllowedException(String.format("Method Not Allowed - unsuccessful call to %s endpoint", URL)))
+                .when(insolvencyService).deleteInsolvency(anyString(), anyString());
+
+        mockMvc.perform(delete(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342"))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
+    @DisplayName("Insolvency DELETE request - InternalServerError status code 500")
+    void callInsolvencyDeleteRequestInternalServerError() throws Exception {
+
+        doThrow(new InternalServerErrorException("Internal Server Error - unexpected error"))
+                .when(insolvencyService).deleteInsolvency(anyString(), anyString());
+
+        mockMvc.perform(delete(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342"))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DisplayName("Insolvency DELETE request - ServiceUnavailable status code 503")
+    void callInsolvencyDeleteRequestServiceUnavailable() throws Exception {
+
+        doThrow(new ServiceUnavailableException("Service Unavailable - connection issues"))
+                .when(insolvencyService).deleteInsolvency(anyString(), anyString());
+
+        mockMvc.perform(delete(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342"))
+                .andExpect(status().isServiceUnavailable());
     }
 }
