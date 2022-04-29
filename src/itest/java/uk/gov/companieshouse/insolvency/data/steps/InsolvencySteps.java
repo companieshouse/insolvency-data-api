@@ -141,7 +141,7 @@ public class InsolvencySteps {
     @When("CHS kafka API service is unavailable")
     public void chs_kafka_service_unavailable() throws IOException {
         doThrow(ServiceUnavailableException.class)
-                .when(insolvencyApiService).invokeChsKafkaApi(anyString(), anyString());
+                .when(insolvencyApiService).invokeChsKafkaApi(anyString(), anyString(), anyString());
     }
 
     @When("I send DELETE request with company number {string}")
@@ -149,12 +149,14 @@ public class InsolvencySteps {
         String uri = "/company/{company_number}/insolvency";
 
         HttpHeaders headers = new HttpHeaders();
+        this.contextId = "5234234234";
         headers.set("x-request-id", "5234234234");
         var request = new HttpEntity<>(null, headers);
 
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        this.companyNumber = companyNumber;
     }
 
     @Then("I should receive {int} status code")
@@ -202,14 +204,15 @@ public class InsolvencySteps {
         assertThat(expected.getCases()).isEqualTo(actual.getCases());
     }
 
-    @Then("the CHS Kafka API is invoked successfully")
-    public void chs_kafka_api_invoked() throws IOException {
-        verify(insolvencyApiService).invokeChsKafkaApi(eq(this.contextId), eq(companyNumber));
+//    @Then("the CHS Kafka API is invoked successfully")
+    @Then("the CHS Kafka API is invoked successfully with event {string}")
+    public void chs_kafka_api_invoked(String event) throws IOException {
+        verify(insolvencyApiService).invokeChsKafkaApi(eq(this.contextId), eq(companyNumber), eq(event));
     }
 
     @Then("the CHS Kafka API is not invoked")
     public void chs_kafka_api_not_invoked() throws IOException {
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(any(), any());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(any(), any(), any());
     }
 
     @Then("nothing is persisted in the database")

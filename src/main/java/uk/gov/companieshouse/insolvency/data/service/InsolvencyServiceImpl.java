@@ -94,7 +94,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
         }
 
         if (savedToDb) {
-            insolvencyApiService.invokeChsKafkaApi(contextId, companyNumber);
+            insolvencyApiService.invokeChsKafkaApi(contextId, companyNumber, "changed");
 
             logger.info(String.format("ChsKafka api invoked successfully for company number %s",
                     companyNumber));
@@ -128,6 +128,10 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             insolvencyRepository.deleteById(companyNumber);
             logger.info(String.format(
                     "Company insolvency delete called for company number %s",
+                    companyNumber));
+
+            insolvencyApiService.invokeChsKafkaApi(contextId, companyNumber, "deleted");
+            logger.info(String.format("ChsKafka api invoked successfully for company number %s",
                     companyNumber));
         } catch (DataAccessException dbException) {
             throw new ServiceUnavailableException(dbException.getMessage());

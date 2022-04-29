@@ -20,7 +20,7 @@ Feature: Error and retry scenarios for company insolvency
     And I send PUT request with payload "<data>" file
     Then I should receive 503 status code
     And the expected result should match "<result>" file
-    And the CHS Kafka API is invoked successfully
+    And the CHS Kafka API is invoked successfully with event "changed"
 
     Examples:
       | data                             | result |

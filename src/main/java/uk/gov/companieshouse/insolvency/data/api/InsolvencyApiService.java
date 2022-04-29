@@ -37,13 +37,16 @@ public class InsolvencyApiService {
      * @param companyNumber company insolvency number
      * @return response returned from chs-kafka api
      */
-    public ApiResponse<Void> invokeChsKafkaApi(String contextId, String companyNumber) {
+    public ApiResponse<Void> invokeChsKafkaApi(String contextId,
+                                               String companyNumber,
+                                               String eventType) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
         internalApiClient.setBasePath(chsKafkaUrl);
 
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler().postChangedResource(
-                        CHANGED_RESOURCE_URI, mapChangedResource(contextId, companyNumber));
+                        CHANGED_RESOURCE_URI,
+                        mapChangedResource(contextId, companyNumber, eventType));
 
         try {
             return changedResourcePost.execute();
@@ -62,11 +65,13 @@ public class InsolvencyApiService {
         }
     }
 
-    private ChangedResource mapChangedResource(String contextId, String companyNumber) {
+    private ChangedResource mapChangedResource(String contextId,
+                                               String companyNumber,
+                                               String eventType) {
         String resourceUri = "/company/" + companyNumber + "/insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
-        event.setType("changed");
+        event.setType(eventType);
         event.publishedAt(String.valueOf(OffsetDateTime.now()));
 
         ChangedResource changedResource = new ChangedResource();
