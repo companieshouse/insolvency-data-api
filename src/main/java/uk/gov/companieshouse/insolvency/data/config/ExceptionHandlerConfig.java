@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,7 +43,7 @@ public class ExceptionHandlerConfig {
         responseBody.put("timestamp", LocalDateTime.now());
         responseBody.put("message", "Unable to process the request.");
         request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -63,7 +62,7 @@ public class ExceptionHandlerConfig {
         responseBody.put("timestamp", LocalDateTime.now());
         responseBody.put("message", "Resource not found.");
         request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity(responseBody, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -83,7 +82,7 @@ public class ExceptionHandlerConfig {
         responseBody.put("timestamp", LocalDateTime.now());
         responseBody.put("message", "Bad request.");
         request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity(responseBody, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -103,7 +102,7 @@ public class ExceptionHandlerConfig {
         responseBody.put("timestamp", LocalDateTime.now());
         responseBody.put("message", "Unable to process the request.");
         request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity(responseBody, HttpStatus.METHOD_NOT_ALLOWED);
+        return new ResponseEntity<>(responseBody, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -124,6 +123,6 @@ public class ExceptionHandlerConfig {
         responseBody.put("timestamp", LocalDateTime.now());
         responseBody.put("message", "Service unavailable.");
         request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity(responseBody, HttpStatus.SERVICE_UNAVAILABLE);
+        return new ResponseEntity<>(responseBody, HttpStatus.SERVICE_UNAVAILABLE);
     }
 }

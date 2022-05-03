@@ -132,6 +132,31 @@ class InsolvencyServiceImplTest {
         verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), eq(companyNumber), eq("deleted"));
     }
 
+    @Test
+    void when_connection_issue_in_db_on_delete_then_throw_service_unavailable_exception() {
+        String companyNumber = "CH363453";
+
+        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(new InsolvencyDocument()));
+        doThrow(new DataAccessResourceFailureException("Connection broken"))
+                .when(repository)
+                .deleteById(companyNumber);
+
+        Assert.assertThrows(ServiceUnavailableException.class, () ->
+                underTest.deleteInsolvency("436534543", companyNumber));
+    }
+
+    @Test
+    void when_connection_issue_in_db_on_find_in_delete_then_throw_service_unavailable_exception() {
+        String companyNumber = "CH363453";
+
+        doThrow(new DataAccessResourceFailureException("Connection broken"))
+                .when(repository)
+                .findById(companyNumber);
+
+        Assert.assertThrows(ServiceUnavailableException.class, () ->
+                underTest.deleteInsolvency("436534543", companyNumber));
+    }
+
     private InternalCompanyInsolvency createInternalCompanyInsolvency() {
         InternalCompanyInsolvency companyInsolvency = new InternalCompanyInsolvency();
         InternalData internalData = new InternalData();

@@ -108,7 +108,7 @@ public class InsolvencySteps {
         this.contextId = "5234234234";
         headers.set("x-request-id", this.contextId);
 
-        HttpEntity request = new HttpEntity(companyInsolvency, headers);
+        HttpEntity<?> request = new HttpEntity<>(companyInsolvency, headers);
         String uri = "/company/{company_number}/insolvency";
         String companyNumber = "CH5324324";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
@@ -129,7 +129,7 @@ public class InsolvencySteps {
         this.contextId = "5234234234";
         headers.set("x-request-id", this.contextId);
 
-        HttpEntity request = new HttpEntity(raw_payload, headers);
+        HttpEntity<?> request = new HttpEntity<>(raw_payload, headers);
         String uri = "/company/{company_number}/insolvency";
         String companyNumber = "CH5324324";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
