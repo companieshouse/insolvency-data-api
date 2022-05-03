@@ -89,7 +89,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
         }
 
         if (savedToDb) {
-            insolvencyApiService.invokeChsKafkaApi(contextId, companyNumber, "changed");
+            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument, "changed", false);
 
             logger.info(String.format("ChsKafka api invoked successfully for company number %s",
                     companyNumber));
@@ -125,7 +125,8 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                     "Company insolvency delete called for company number %s",
                     companyNumber));
 
-            insolvencyApiService.invokeChsKafkaApi(contextId, companyNumber, "deleted");
+            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocumentOptional.get(),
+                    "deleted", true);
             logger.info(String.format("ChsKafka api invoked successfully for company number %s",
                     companyNumber));
         } catch (DataAccessException dbException) {

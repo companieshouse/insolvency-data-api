@@ -50,7 +50,8 @@ class InsolvencyServiceImplTest {
         underTest.processInsolvency(contextId, companyNumber, companyInsolvency);
 
         verify(repository, Mockito.times(1)).save(Mockito.any());
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), eq(companyNumber), eq("changed"));
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), any(),
+                eq("changed"), eq(false));
     }
 
     @Test
@@ -63,7 +64,8 @@ class InsolvencyServiceImplTest {
 
         Assert.assertThrows(ServiceUnavailableException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), anyString(), anyString());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(),
+                anyString(), eq(false));
 
     }
 
@@ -91,7 +93,7 @@ class InsolvencyServiceImplTest {
 
         Assert.assertThrows(BadRequestException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), anyString(), anyString());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), anyString(), anyBoolean());
     }
 
     @Test
@@ -100,7 +102,7 @@ class InsolvencyServiceImplTest {
                 ("CH4000056"));
 
         verify(repository, Mockito.times(1)).findById(Mockito.any());
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), anyString(), anyString());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), anyString(), anyBoolean());
     }
 
     @Test
@@ -113,7 +115,7 @@ class InsolvencyServiceImplTest {
 
         verify(repository, Mockito.times(0)).deleteById(Mockito.any());
         verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), anyString(), anyString());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), anyString(), anyBoolean());
     }
 
     @Test
@@ -129,7 +131,7 @@ class InsolvencyServiceImplTest {
         );
         verify(repository, Mockito.times(1)).deleteById(Mockito.any());
         verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), eq(companyNumber), eq("deleted"));
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), eq(document), eq("deleted"), eq(true));
     }
 
     @Test
