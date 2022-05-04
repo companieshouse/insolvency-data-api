@@ -50,22 +50,11 @@ public class InsolvencyApiService {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
         internalApiClient.setBasePath(chsKafkaUrl);
 
-        PrivateChangedResourcePost changedResourcePost = null;
-
-        if (!isDelete) {
-            changedResourcePost =
-                    internalApiClient.privateChangedResourceHandler().postChangedResource(
-                            CHANGED_RESOURCE_URI, mapChangedResource(
-                                    contextId, insolvencyDocument, eventType,false)
-                    );
-        } else {
-            changedResourcePost = internalApiClient.privateChangedResourceHandler()
-                    .postChangedResource(
-                            CHANGED_RESOURCE_URI, mapChangedResource(
-                                    contextId, insolvencyDocument, eventType,true)
-                    );
-        }
-
+        PrivateChangedResourcePost changedResourcePost =
+                internalApiClient.privateChangedResourceHandler().postChangedResource(
+                        CHANGED_RESOURCE_URI, mapChangedResource(
+                                contextId, insolvencyDocument, eventType, isDelete)
+                );
         try {
             return changedResourcePost.execute();
         } catch (ApiErrorResponseException exp) {
