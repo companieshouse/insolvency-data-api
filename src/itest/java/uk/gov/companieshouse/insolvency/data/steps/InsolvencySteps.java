@@ -3,7 +3,6 @@ package uk.gov.companieshouse.insolvency.data.steps;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -14,19 +13,17 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.*;
-import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
+import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.config.CucumberContext;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
@@ -141,7 +138,7 @@ public class InsolvencySteps {
     @When("CHS kafka API service is unavailable")
     public void chs_kafka_service_unavailable() throws IOException {
         doThrow(ServiceUnavailableException.class)
-                .when(insolvencyApiService).invokeChsKafkaApi(anyString(), anyString(), anyString());
+                .when(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), any());
     }
 
     @When("I send DELETE request with company number {string}")
@@ -204,15 +201,17 @@ public class InsolvencySteps {
         assertThat(expected.getCases()).isEqualTo(actual.getCases());
     }
 
-//    @Then("the CHS Kafka API is invoked successfully")
     @Then("the CHS Kafka API is invoked successfully with event {string}")
     public void chs_kafka_api_invoked(String event) throws IOException {
-        verify(insolvencyApiService).invokeChsKafkaApi(eq(this.contextId), eq(companyNumber), eq(event));
+        Optional<EventType> eventType = EventType.getEventType(event);
+        assertThat(eventType).isPresent();
+        verify(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), eq(eventType.get()));
     }
 
     @Then("the CHS Kafka API is not invoked")
     public void chs_kafka_api_not_invoked() throws IOException {
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(any(), any(), any());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(),
+                any(InsolvencyDocument.class), any());
     }
 
     @Then("nothing is persisted in the database")

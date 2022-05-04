@@ -18,8 +18,10 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.util.stream.Stream;
@@ -59,7 +61,7 @@ public class InsolvencyApiClientServiceTest {
         when(changedResourcePost.execute()).thenReturn(response);
 
         ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
-                "CH4000056", "changed");
+                getInsolvencyDocument(), EventType.CHANGED);
 
         Assertions.assertThat(apiResponse).isNotNull();
 
@@ -80,7 +82,7 @@ public class InsolvencyApiClientServiceTest {
 
 
         Assert.assertThrows(RuntimeException.class, () -> insolvencyApiService.invokeChsKafkaApi
-                ("3245435", "CH4000056", "changed"));
+                ("3245435", getInsolvencyDocument(), EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
@@ -104,7 +106,7 @@ public class InsolvencyApiClientServiceTest {
 
         Assert.assertThrows(exception,
                 () -> insolvencyApiService.invokeChsKafkaApi
-                        ("3245435", "CH4000056", "changed"));
+                        ("3245435", getInsolvencyDocument(), EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
@@ -119,5 +121,10 @@ public class InsolvencyApiClientServiceTest {
                 Arguments.of(405, "Method Not Allowed", MethodNotAllowedException.class),
                 Arguments.of(500, "Internal Service Error", RuntimeException.class)
         );
+    }
+
+    private InsolvencyDocument getInsolvencyDocument() {
+        return new InsolvencyDocument("CH4000056", null, null,
+                null, null);
     }
 }

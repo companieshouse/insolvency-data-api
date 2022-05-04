@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.insolvency.data.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -10,8 +12,10 @@ import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.logging.Logger;
 
 @Service
@@ -21,33 +25,36 @@ public class InsolvencyApiService {
     private final Logger logger;
     private final String chsKafkaUrl;
     private final ApiClientService apiClientService;
+    private final ObjectMapper objectMapper;
 
     /**
      * Invoke Insolvency API.
      */
     public InsolvencyApiService(@Value("${chs.kafka.api.endpoint}") String chsKafkaUrl,
-                                ApiClientService apiClientService, Logger logger) {
+                                ApiClientService apiClientService, ObjectMapper objectMapper,
+                                Logger logger) {
         this.chsKafkaUrl = chsKafkaUrl;
         this.apiClientService = apiClientService;
+        this.objectMapper = objectMapper;
         this.logger = logger;
     }
 
     /**
      * Call chs-kafka api.
-     * @param companyNumber company insolvency number
+     * @param insolvencyDocument company insolvency document
      * @return response returned from chs-kafka api
      */
     public ApiResponse<Void> invokeChsKafkaApi(String contextId,
-                                               String companyNumber,
-                                               String eventType) {
+                                               InsolvencyDocument insolvencyDocument,
+                                               EventType eventType) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
         internalApiClient.setBasePath(chsKafkaUrl);
 
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler().postChangedResource(
-                        CHANGED_RESOURCE_URI,
-                        mapChangedResource(contextId, companyNumber, eventType));
-
+                        CHANGED_RESOURCE_URI, mapChangedResource(
+                                contextId, insolvencyDocument, eventType)
+                );
         try {
             return changedResourcePost.execute();
         } catch (ApiErrorResponseException exp) {
@@ -66,12 +73,12 @@ public class InsolvencyApiService {
     }
 
     private ChangedResource mapChangedResource(String contextId,
-                                               String companyNumber,
-                                               String eventType) {
-        String resourceUri = "/company/" + companyNumber + "/insolvency";
+                                               InsolvencyDocument insolvencyDocument,
+                                               EventType eventType) {
+        String resourceUri = "/company/" + insolvencyDocument.getId() + "/insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
-        event.setType(eventType);
+        event.setType(eventType.name());
         event.publishedAt(String.valueOf(OffsetDateTime.now()));
 
         ChangedResource changedResource = new ChangedResource();
@@ -79,6 +86,16 @@ public class InsolvencyApiService {
         changedResource.event(event);
         changedResource.setResourceKind("company-insolvency");
         changedResource.setContextId(contextId);
+
+        if (EventType.DELETED.equals(eventType)) {
+            try {
+                changedResource.setDeletedData(objectMapper.writeValueAsString(
+                        insolvencyDocument.getCompanyInsolvency()));
+            } catch (JsonProcessingException exp) {
+                logger.error("Error occurred while serializing to json", exp);
+                throw new RuntimeException(exp);
+            }
+        }
 
         return changedResource;
     }
