@@ -18,6 +18,7 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
@@ -60,7 +61,7 @@ public class InsolvencyApiClientServiceTest {
         when(changedResourcePost.execute()).thenReturn(response);
 
         ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
-                getInsolvencyDocument(), "changed", false);
+                getInsolvencyDocument(), EventType.CHANGED);
 
         Assertions.assertThat(apiResponse).isNotNull();
 
@@ -81,7 +82,7 @@ public class InsolvencyApiClientServiceTest {
 
 
         Assert.assertThrows(RuntimeException.class, () -> insolvencyApiService.invokeChsKafkaApi
-                ("3245435", getInsolvencyDocument(), "changed", false));
+                ("3245435", getInsolvencyDocument(), EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
@@ -105,7 +106,7 @@ public class InsolvencyApiClientServiceTest {
 
         Assert.assertThrows(exception,
                 () -> insolvencyApiService.invokeChsKafkaApi
-                        ("3245435", getInsolvencyDocument(), "changed", false));
+                        ("3245435", getInsolvencyDocument(), EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();

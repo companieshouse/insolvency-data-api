@@ -15,6 +15,7 @@ import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
+import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
@@ -94,7 +95,8 @@ public class InsolvencyServiceImpl implements InsolvencyService {
         }
 
         if (savedToDb) {
-            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument, "changed", false);
+            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
+                    EventType.CHANGED);
 
             logger.info(String.format("ChsKafka api invoked successfully for company number %s",
                     companyNumber));
@@ -131,7 +133,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                     companyNumber));
 
             insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocumentOptional.get(),
-                    "deleted", true);
+                    EventType.DELETED);
             logger.info(String.format("ChsKafka api invoked successfully for company number %s",
                     companyNumber));
         } catch (DataAccessException dbException) {

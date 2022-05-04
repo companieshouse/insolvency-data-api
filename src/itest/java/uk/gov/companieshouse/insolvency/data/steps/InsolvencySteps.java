@@ -23,6 +23,7 @@ import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
+import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.config.CucumberContext;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
@@ -137,7 +138,7 @@ public class InsolvencySteps {
     @When("CHS kafka API service is unavailable")
     public void chs_kafka_service_unavailable() throws IOException {
         doThrow(ServiceUnavailableException.class)
-                .when(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), anyString(), anyBoolean());
+                .when(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), any());
     }
 
     @When("I send DELETE request with company number {string}")
@@ -200,16 +201,17 @@ public class InsolvencySteps {
         assertThat(expected.getCases()).isEqualTo(actual.getCases());
     }
 
-//    @Then("the CHS Kafka API is invoked successfully")
     @Then("the CHS Kafka API is invoked successfully with event {string}")
     public void chs_kafka_api_invoked(String event) throws IOException {
-        verify(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), eq(event), anyBoolean());
+        Optional<EventType> eventType = EventType.getEventType(event);
+        assertThat(eventType).isPresent();
+        verify(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), eq(eventType.get()));
     }
 
     @Then("the CHS Kafka API is not invoked")
     public void chs_kafka_api_not_invoked() throws IOException {
         verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(),
-                any(InsolvencyDocument.class), anyString(), anyBoolean());
+                any(InsolvencyDocument.class), any());
     }
 
     @Then("nothing is persisted in the database")

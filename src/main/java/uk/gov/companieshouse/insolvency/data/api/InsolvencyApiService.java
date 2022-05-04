@@ -12,6 +12,7 @@ import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
+import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
@@ -45,15 +46,14 @@ public class InsolvencyApiService {
      */
     public ApiResponse<Void> invokeChsKafkaApi(String contextId,
                                                InsolvencyDocument insolvencyDocument,
-                                               String eventType,
-                                               boolean isDelete) {
+                                               EventType eventType) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
         internalApiClient.setBasePath(chsKafkaUrl);
 
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler().postChangedResource(
                         CHANGED_RESOURCE_URI, mapChangedResource(
-                                contextId, insolvencyDocument, eventType, isDelete)
+                                contextId, insolvencyDocument, eventType)
                 );
         try {
             return changedResourcePost.execute();
@@ -74,11 +74,11 @@ public class InsolvencyApiService {
 
     private ChangedResource mapChangedResource(String contextId,
                                                InsolvencyDocument insolvencyDocument,
-                                               String eventType, boolean isDelete) {
+                                               EventType eventType) {
         String resourceUri = "/company/" + insolvencyDocument.getId() + "/insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
-        event.setType(eventType);
+        event.setType(eventType.name());
         event.publishedAt(String.valueOf(OffsetDateTime.now()));
 
         ChangedResource changedResource = new ChangedResource();
@@ -87,9 +87,10 @@ public class InsolvencyApiService {
         changedResource.setResourceKind("company-insolvency");
         changedResource.setContextId(contextId);
 
-        if (isDelete) {
+        if (EventType.DELETED.equals(eventType)) {
             try {
-                changedResource.setDeletedData(objectMapper.writeValueAsString(insolvencyDocument));
+                changedResource.setDeletedData(objectMapper.writeValueAsString(
+                        insolvencyDocument.getCompanyInsolvency()));
             } catch (JsonProcessingException exp) {
                 logger.error("Error occurred while serializing to json", exp);
                 throw new RuntimeException(exp);
