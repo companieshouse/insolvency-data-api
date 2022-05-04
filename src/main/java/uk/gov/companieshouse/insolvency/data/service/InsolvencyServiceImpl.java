@@ -57,30 +57,30 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
             Optional<InsolvencyDocument> insolvencyDocumentFromDbOptional =
                     insolvencyRepository.findById(companyNumber);
+            OffsetDateTime dateFromBodyRequest = companyInsolvency.getInternalData().getDeltaAt();
 
             if (insolvencyDocumentFromDbOptional.isPresent()) {
-                OffsetDateTime dateFromBodyRequest = companyInsolvency
-                        .getInternalData().getDeltaAt();
                 InsolvencyDocument insolvencyDocumentFromDb =
                         insolvencyDocumentFromDbOptional.get();
 
-                LocalDateTime deltaAtFromDbLocalDateTime = insolvencyDocumentFromDb
-                        .getDeltaAt();
+                LocalDateTime deltaAtFromDbStr = insolvencyDocumentFromDb.getDeltaAt();
 
-                OffsetDateTime deltaAtFromDb =
-                        OffsetDateTime.of(deltaAtFromDbLocalDateTime, ZoneOffset.UTC);
+                if (deltaAtFromDbStr == null || dateFromBodyRequest.isAfter(
+                        OffsetDateTime.of(deltaAtFromDbStr, ZoneOffset.UTC))) {
+                    insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
+                    insolvencyDocument.setUpdatedAt(LocalDateTime.now());
 
-                if (dateFromBodyRequest.isAfter(deltaAtFromDb)) {
                     insolvencyRepository.save(insolvencyDocument);
                     savedToDb = true;
-                    logger.info(String.format(
-                            "Company insolvency collection updated successfully "
+                    logger.info(String.format("Company insolvency collection updated successfully "
                                     + "for company number %s", companyNumber));
                 } else {
                     logger.info("Insolvency not persisted as the record provided is older"
                             + " than the one already stored.");
                 }
             } else {
+                insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
+                insolvencyDocument.setUpdatedAt(LocalDateTime.now());
                 insolvencyRepository.save(insolvencyDocument);
                 savedToDb = true;
                 logger.info(String.format(
