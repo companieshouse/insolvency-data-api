@@ -78,7 +78,7 @@ public class InsolvencyApiService {
         String resourceUri = "/company/" + insolvencyDocument.getId() + "/insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
-        event.setType(eventType.name());
+        event.setType(eventType.getEvent());
         event.publishedAt(String.valueOf(OffsetDateTime.now()));
 
         ChangedResource changedResource = new ChangedResource();
