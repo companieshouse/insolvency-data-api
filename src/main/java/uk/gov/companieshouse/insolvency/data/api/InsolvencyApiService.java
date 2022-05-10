@@ -90,7 +90,6 @@ public class InsolvencyApiService {
         if (EventType.DELETED.equals(eventType)) {
             changedResource.setDeletedData(insolvencyDocument.getCompanyInsolvency());
         }
-
         return changedResource;
     }
 
