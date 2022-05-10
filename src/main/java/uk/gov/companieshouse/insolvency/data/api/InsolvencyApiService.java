@@ -88,13 +88,7 @@ public class InsolvencyApiService {
         changedResource.setContextId(contextId);
 
         if (EventType.DELETED.equals(eventType)) {
-            try {
-                changedResource.setDeletedData(objectMapper.writeValueAsString(
-                        insolvencyDocument.getCompanyInsolvency()));
-            } catch (JsonProcessingException exp) {
-                logger.error("Error occurred while serializing to json", exp);
-                throw new RuntimeException(exp);
-            }
+            changedResource.setDeletedData(insolvencyDocument.getCompanyInsolvency());
         }
 
         return changedResource;
