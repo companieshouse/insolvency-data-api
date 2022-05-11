@@ -156,6 +156,19 @@ public class InsolvencySteps {
         this.companyNumber = companyNumber;
     }
 
+    @When("I send DELETE request without x-request-id key in the header")
+    public void i_send_delete_request_without_x_request_id_key_in_the_header() {
+        String uri = "/company/CH1234567/insolvency";
+
+        HttpHeaders headers = new HttpHeaders();
+        this.contextId = "5234234234";
+        var request = new HttpEntity<>(null, headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
     @Then("I should receive {int} status code")
     public void i_should_receive_status_code(Integer statusCode) {
         int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");
