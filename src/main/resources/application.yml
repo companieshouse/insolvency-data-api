@@ -13,10 +13,15 @@ springfox:
     auto-startup: false
 
 spring:
+  jackson:
+    default-property-inclusion: NON_NULL
   data:
     mongodb:
       uri: ${MONGODB_URL:mongodb://127.0.0.1:27017/insolvency}
 
 insolvency:
   transactions: ${TRANSACTIONS_ENABLED:false}
+
+
+
 
