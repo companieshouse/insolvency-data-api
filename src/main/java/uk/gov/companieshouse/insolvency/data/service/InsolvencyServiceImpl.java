@@ -73,11 +73,18 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
                     insolvencyRepository.save(insolvencyDocument);
                     savedToDb = true;
-                    logger.info(String.format("Company insolvency collection updated successfully "
-                                    + "for company number %s", companyNumber));
+                    logger.info(String.format(
+                            "Company insolvency is updated in MongoDB with "
+                                    + "context id %s and company number %s",
+                            contextId,
+                            companyNumber));
                 } else {
-                    logger.info("Insolvency not persisted as the record provided is older"
-                            + " than the one already stored.");
+                    logger.info(String.format("Insolvency not persisted as "
+                                    + "the record provided is older"
+                            + " than the one already stored, context id is %s "
+                                    + "and company number %s",
+                            contextId,
+                            companyNumber));
                 }
             } else {
                 insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
@@ -85,7 +92,9 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                 insolvencyRepository.save(insolvencyDocument);
                 savedToDb = true;
                 logger.info(String.format(
-                        "Company insolvency collection inserted successfully for company number %s",
+                        "Company insolvency is inserted in MongoDB with "
+                                + "context id %s and company number %s",
+                        contextId,
                         companyNumber));
             }
         } catch (IllegalArgumentException illegalArgumentEx) {
@@ -98,7 +107,9 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
                     EventType.CHANGED);
 
-            logger.info(String.format("ChsKafka api invoked successfully for company number %s",
+            logger.info(String.format("ChsKafka api CHANGED invoked "
+                            + "successfully for context id %s and company number %s",
+                    contextId,
                     companyNumber));
         }
     }
@@ -129,12 +140,16 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
             insolvencyRepository.deleteById(companyNumber);
             logger.info(String.format(
-                    "Company insolvency delete called for company number %s",
+                    "Company insolvency is deleted in MongoDB with "
+                            + "context id %s and company number %s",
+                    contextId,
                     companyNumber));
 
             insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocumentOptional.get(),
                     EventType.DELETED);
-            logger.info(String.format("ChsKafka api invoked successfully for company number %s",
+            logger.info(String.format("ChsKafka api DELETE invoked successfully "
+                            + "for context id %s and company number %s",
+                    contextId,
                     companyNumber));
         } catch (DataAccessException dbException) {
             throw new ServiceUnavailableException(dbException.getMessage());
