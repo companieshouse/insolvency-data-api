@@ -71,12 +71,13 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                     insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
                     insolvencyDocument.setUpdatedAt(LocalDateTime.now());
                     insolvencyDocument.getCompanyInsolvency().setStatus(null);
-                    if (insolvencyDocumentFromDb.getCompanyInsolvency() != null
-                            && insolvencyDocumentFromDb.getCompanyInsolvency()
-                            .getStatus() != null) {
-                        insolvencyDocument.getCompanyInsolvency()
-                                .setStatus(insolvencyDocumentFromDb
-                                        .getCompanyInsolvency().getStatus());
+
+                    var statusFromDb = Optional.ofNullable(
+                                    insolvencyDocumentFromDb.getCompanyInsolvency())
+                            .map(CompanyInsolvency::getStatus);
+
+                    if (statusFromDb.isPresent()) {
+                        insolvencyDocument.getCompanyInsolvency().setStatus(statusFromDb.get());
                     }
 
                     insolvencyRepository.save(insolvencyDocument);
