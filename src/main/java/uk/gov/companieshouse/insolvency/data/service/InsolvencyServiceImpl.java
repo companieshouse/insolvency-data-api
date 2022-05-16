@@ -70,6 +70,15 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                         OffsetDateTime.of(deltaAtFromDbStr, ZoneOffset.UTC))) {
                     insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
                     insolvencyDocument.setUpdatedAt(LocalDateTime.now());
+                    insolvencyDocument.getCompanyInsolvency().setStatus(null);
+
+                    var statusFromDb = Optional.ofNullable(
+                                    insolvencyDocumentFromDb.getCompanyInsolvency())
+                            .map(CompanyInsolvency::getStatus);
+
+                    if (statusFromDb.isPresent()) {
+                        insolvencyDocument.getCompanyInsolvency().setStatus(statusFromDb.get());
+                    }
 
                     insolvencyRepository.save(insolvencyDocument);
                     savedToDb = true;
@@ -82,6 +91,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             } else {
                 insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
                 insolvencyDocument.setUpdatedAt(LocalDateTime.now());
+                insolvencyDocument.getCompanyInsolvency().setStatus(null);
                 insolvencyRepository.save(insolvencyDocument);
                 savedToDb = true;
                 logger.info(String.format(
