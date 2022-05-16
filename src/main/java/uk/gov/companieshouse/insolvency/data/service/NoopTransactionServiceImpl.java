@@ -65,6 +65,14 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                         OffsetDateTime.of(deltaAtFromDbStr, ZoneOffset.UTC))) {
                     insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
                     insolvencyDocument.setUpdatedAt(LocalDateTime.now());
+                    insolvencyDocument.getCompanyInsolvency().setStatus(null);
+                    if (insolvencyDocumentFromDb.getCompanyInsolvency() != null
+                            && insolvencyDocumentFromDb.getCompanyInsolvency()
+                            .getStatus() != null) {
+                        insolvencyDocument.getCompanyInsolvency()
+                                .setStatus(insolvencyDocumentFromDb
+                                        .getCompanyInsolvency().getStatus());
+                    }
 
                     insolvencyRepository.save(insolvencyDocument);
                     savedToDb = true;
@@ -77,6 +85,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
             } else {
                 insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
                 insolvencyDocument.setUpdatedAt(LocalDateTime.now());
+                insolvencyDocument.getCompanyInsolvency().setStatus(null);
                 insolvencyRepository.save(insolvencyDocument);
                 savedToDb = true;
                 logger.info(String.format(
