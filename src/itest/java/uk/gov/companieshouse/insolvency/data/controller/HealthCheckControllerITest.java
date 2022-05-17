@@ -21,6 +21,6 @@ public class HealthCheckControllerITest extends AbstractMongoConfig {
     @Test
     @DisplayName("Successfully returns health status")
     public void returnHealthStatusSuccessfully() throws Exception {
-        mockMvc.perform(get("/healthcheck")).andExpect(status().isOk());
+        mockMvc.perform(get("/insolvency-data-api/healthcheck")).andExpect(status().isOk());
     }
 }

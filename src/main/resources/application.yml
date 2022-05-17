@@ -23,5 +23,14 @@ insolvency:
   transactions: ${TRANSACTIONS_ENABLED:false}
 
 
-
-
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      base-path: /insolvency-data-api
+      path-mapping:
+        health: healthcheck
+  endpoint:
+    health:
+      show-details: never
+      enabled: true
