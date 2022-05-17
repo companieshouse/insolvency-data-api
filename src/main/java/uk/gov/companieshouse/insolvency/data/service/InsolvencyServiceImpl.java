@@ -171,7 +171,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
         InternalData internalData = insolvencyApi.getInternalData();
         CompanyInsolvency externalData = insolvencyApi.getExternalData();
 
-        //Generating new Etag
+        //Generating a new Etag
         externalData.setEtag(GenerateEtagUtil.generateEtag());
         return new InsolvencyDocument(companyNumber,
                 externalData,
