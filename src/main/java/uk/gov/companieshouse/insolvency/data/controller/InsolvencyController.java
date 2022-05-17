@@ -45,7 +45,8 @@ public class InsolvencyController {
             @RequestBody InternalCompanyInsolvency requestBody
     ) throws JsonProcessingException {
         logger.info(String.format(
-                "Processing company insolvency information for company number %s",
+                "Payload Successfully received on PUT with context id %s and company number %s",
+                contextId,
                 companyNumber));
 
         insolvencyService.processInsolvency(contextId, companyNumber, requestBody);
@@ -83,7 +84,8 @@ public class InsolvencyController {
             @RequestHeader("x-request-id") String contextId,
             @PathVariable("company_number") String companyNumber) {
         logger.info(String.format(
-                "Deleting company insolvency information for company number %s",
+                "Payload Successfully received on DELETE with context id %s and company number %s",
+                contextId,
                 companyNumber));
         insolvencyService.deleteInsolvency(contextId, companyNumber);
         return ResponseEntity.status(HttpStatus.OK).build();

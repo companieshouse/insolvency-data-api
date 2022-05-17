@@ -128,7 +128,9 @@ class InsolvencyServiceImplTest {
 
         underTest.deleteInsolvency(contextId, companyNumber);
         verify(logger, Mockito.times(1)).info(
-                "Company insolvency delete called for company number " + companyNumber
+                String.format("Company insolvency is deleted in MongoDB with context id %s and company number %s",
+                        contextId,
+                        companyNumber)
         );
         verify(repository, Mockito.times(1)).deleteById(Mockito.any());
         verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
