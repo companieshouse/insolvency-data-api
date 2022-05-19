@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.steps;
 
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -33,4 +34,8 @@ public class CommonApiSteps {
         assertThat(lastResponse.getStatusCode()).isEqualTo(HttpStatus.valueOf(code));
     }
 
+    @And("the client receives a response body of {string}")
+    public void theClientReceivesRawResponse(String response) {
+        assertThat(lastResponse.getBody()).isEqualTo(response);
+    }
 }
