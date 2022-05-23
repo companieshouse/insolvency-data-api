@@ -64,11 +64,11 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                 InsolvencyDocument insolvencyDocumentFromDb =
                         insolvencyDocumentFromDbOptional.get();
 
-                LocalDateTime deltaAtFromDbStr = insolvencyDocumentFromDb.getDeltaAt();
+                OffsetDateTime deltaAtFromDbStr = insolvencyDocumentFromDb.getDeltaAt();
 
                 if (deltaAtFromDbStr == null || dateFromBodyRequest.isAfter(
-                        OffsetDateTime.of(deltaAtFromDbStr, ZoneOffset.UTC))) {
-                    insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
+                        deltaAtFromDbStr)) {
+                    insolvencyDocument.setDeltaAt(dateFromBodyRequest);
                     insolvencyDocument.setUpdatedAt(LocalDateTime.now());
                     insolvencyDocument.getCompanyInsolvency().setStatus(null);
 
@@ -96,7 +96,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                             companyNumber));
                 }
             } else {
-                insolvencyDocument.setDeltaAt(dateFromBodyRequest.toLocalDateTime());
+                insolvencyDocument.setDeltaAt(dateFromBodyRequest);
                 insolvencyDocument.setUpdatedAt(LocalDateTime.now());
                 insolvencyDocument.getCompanyInsolvency().setStatus(null);
                 insolvencyRepository.save(insolvencyDocument);
@@ -175,7 +175,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
         externalData.setEtag(GenerateEtagUtil.generateEtag());
         return new InsolvencyDocument(companyNumber,
                 externalData,
-                internalData.getDeltaAt().toLocalDateTime(),
+                internalData.getDeltaAt(),
                 LocalDateTime.now(),
                 internalData.getUpdatedBy());
     }

@@ -19,6 +19,8 @@ import uk.gov.companieshouse.environment.impl.EnvironmentReaderImpl;
 import uk.gov.companieshouse.insolvency.data.converter.CompanyInsolvencyReadConverter;
 import uk.gov.companieshouse.insolvency.data.converter.CompanyInsolvencyWriteConverter;
 import uk.gov.companieshouse.insolvency.data.converter.EnumConverters;
+import uk.gov.companieshouse.insolvency.data.converter.OffsetDateTimeReader;
+import uk.gov.companieshouse.insolvency.data.converter.OffsetDateTimeWriter;
 import uk.gov.companieshouse.insolvency.data.serialization.LocalDateDeSerializer;
 import uk.gov.companieshouse.insolvency.data.serialization.LocalDateSerializer;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -50,7 +52,8 @@ public class ApplicationConfig {
         ObjectMapper objectMapper = mongoDbObjectMapper();
         return new MongoCustomConversions(List.of(new CompanyInsolvencyWriteConverter(objectMapper),
                 new CompanyInsolvencyReadConverter(objectMapper),new EnumConverters.StringToEnum(),
-                new EnumConverters.EnumToString()));
+                new EnumConverters.EnumToString(),new OffsetDateTimeWriter(),
+                new OffsetDateTimeReader()));
     }
 
     private ObjectMapper mongoDbObjectMapper() {
@@ -65,4 +68,5 @@ public class ApplicationConfig {
 
         return objectMapper;
     }
+
 }

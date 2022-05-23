@@ -2,6 +2,7 @@ package uk.gov.companieshouse.insolvency.data.service;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import org.assertj.core.api.Assertions;
@@ -74,7 +75,7 @@ class InsolvencyServiceImplTest {
     void when_insolvency_number_is_given_then_return_company_insolvency_information() {
         String companyNumber = "234234";
 
-        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), LocalDateTime.now(), LocalDateTime.now(), "123");
+        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
 
         CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency(companyNumber);
@@ -123,7 +124,7 @@ class InsolvencyServiceImplTest {
     void when_company_number_exist_then_finishes_successfully() {
         String companyNumber = "CH363453";
         String contextId = "1234";
-        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), LocalDateTime.now(), LocalDateTime.now(), "123");
+        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
 
         underTest.deleteInsolvency(contextId, companyNumber);
