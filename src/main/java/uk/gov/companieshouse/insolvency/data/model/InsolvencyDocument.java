@@ -19,9 +19,6 @@ public class InsolvencyDocument {
     private CompanyInsolvency companyInsolvency;
 
     @Field("delta_at")
-    @DateTimeFormat(
-            iso = DateTimeFormat.ISO.DATE_TIME
-    )
     private OffsetDateTime deltaAt;
 
     @Field("updated_at")

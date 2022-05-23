@@ -2,7 +2,6 @@ package uk.gov.companieshouse.insolvency.data.service;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -71,7 +70,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                                     insolvencyDocumentFromDb.getCompanyInsolvency())
                             .map(CompanyInsolvency::getStatus);
 
-                    if (statusFromDb.isPresent()) {
+                    if (statusFromDb.isPresent() && !statusFromDb.get().isEmpty()) {
                         insolvencyDocument.getCompanyInsolvency().setStatus(statusFromDb.get());
                     }
 

@@ -52,8 +52,8 @@ public class ApplicationConfig implements WebMvcConfigurer {
         ObjectMapper objectMapper = mongoDbObjectMapper();
         return new MongoCustomConversions(List.of(new CompanyInsolvencyWriteConverter(objectMapper),
                 new CompanyInsolvencyReadConverter(objectMapper),new EnumConverters.StringToEnum(),
-                new EnumConverters.EnumToString(),new OffsetDateTimeWriter(),
-                new OffsetDateTimeReader()));
+                new EnumConverters.EnumToString(), new OffsetDateTimeReader(),
+                new OffsetDateTimeWriter()));
     }
 
     private ObjectMapper mongoDbObjectMapper() {
