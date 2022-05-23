@@ -49,7 +49,7 @@ public class RepositoryITest extends AbstractMongoConfig {
     companyInsolvency.setExternalData(externalData);
 
     externalData.setEtag(GenerateEtagUtil.generateEtag());
-    return new InsolvencyDocument(companyNumber, externalData, internalData.getDeltaAt().toLocalDateTime(), LocalDateTime.now(), internalData.getUpdatedBy());
+    return new InsolvencyDocument(companyNumber, externalData, internalData.getDeltaAt(), LocalDateTime.now(), internalData.getUpdatedBy());
   }
 
   @AfterAll
