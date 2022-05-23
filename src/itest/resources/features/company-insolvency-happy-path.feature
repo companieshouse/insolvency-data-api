@@ -13,6 +13,16 @@ Feature: Process company insolvency information
       | case_type_compulsory_liquidation | case_type_compulsory_liquidation_output |
       | case_type_receivership           | case_type_receivership_output           |
 
+  Scenario Outline: Processing company insolvency information no eric headers
+
+    Given Insolvency data api service is running
+    When I send PUT request with payload "<data>" file without eric headers
+    Then I should receive 401 status code
+
+    Examples:
+      | data                             |
+      | case_type_compulsory_liquidation |
+
   Scenario Outline: Retrieve company insolvency information successfully
 
     Given Insolvency data api service is running
@@ -24,3 +34,4 @@ Feature: Process company insolvency information
     Examples:
       | companyNumber | result                     |
       | CH3634545     | retrieve_by_company_number |
+

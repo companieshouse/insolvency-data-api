@@ -24,7 +24,7 @@ import uk.gov.companieshouse.insolvency.data.serialization.LocalDateSerializer;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @Configuration
-public class ApplicationConfig implements WebMvcConfigurer {
+public class ApplicationConfig {
 
     @Bean
     EnvironmentReader environmentReader() {

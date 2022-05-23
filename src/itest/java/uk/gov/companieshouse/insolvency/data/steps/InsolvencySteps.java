@@ -85,8 +85,27 @@ public class InsolvencySteps {
 
     @When("I send GET request with company number {string}")
     public void i_send_get_request_with_company_number(String companyNumber) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("ERIC-Identity" , "SOME_IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+
+        HttpEntity<?> request = new HttpEntity<>(headers);
+
         String uri = "/company/{company_number}/insolvency";
-        ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, null,
+        ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, request,
+                CompanyInsolvency.class, companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+    }
+
+    @When("I send GET request with company number {string} without eric headers")
+    public void i_send_get_request_with_company_number_without_eric_header(String companyNumber) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<?> request = new HttpEntity<>(headers);
+
+        String uri = "/company/{company_number}/insolvency";
+        ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, request,
                 CompanyInsolvency.class, companyNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
@@ -95,6 +114,29 @@ public class InsolvencySteps {
 
     @When("I send PUT request with payload {string} file")
     public void i_send_put_request_with_payload(String string) throws IOException {
+        File file = new ClassPathResource("/json/input/" + string + ".json").getFile();
+        InternalCompanyInsolvency companyInsolvency = objectMapper.readValue(file, InternalCompanyInsolvency.class);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        this.contextId = "5234234234";
+        headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity" , "SOME_IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+
+        HttpEntity<?> request = new HttpEntity<>(companyInsolvency, headers);
+        String uri = "/company/{company_number}/insolvency";
+        String companyNumber = "CH5324324";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
+
+        this.companyNumber = companyNumber;
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+    }
+
+    @When("I send PUT request with payload {string} file without eric headers")
+    public void i_send_put_request_with_payload_without_eric_header(String string) throws IOException {
         File file = new ClassPathResource("/json/input/" + string + ".json").getFile();
         InternalCompanyInsolvency companyInsolvency = objectMapper.readValue(file, InternalCompanyInsolvency.class);
 
@@ -125,6 +167,8 @@ public class InsolvencySteps {
 
         this.contextId = "5234234234";
         headers.set("x-request-id", this.contextId);
+        headers.set("ERIC-Identity" , "SOME_IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
 
         HttpEntity<?> request = new HttpEntity<>(raw_payload, headers);
         String uri = "/company/{company_number}/insolvency";
@@ -143,6 +187,23 @@ public class InsolvencySteps {
 
     @When("I send DELETE request with company number {string}")
     public void i_send_delete_request_with_company_number(String companyNumber) throws IOException {
+        String uri = "/company/{company_number}/insolvency";
+
+        HttpHeaders headers = new HttpHeaders();
+        this.contextId = "5234234234";
+        headers.set("x-request-id", "5234234234");
+        headers.set("ERIC-Identity" , "SOME_IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        var request = new HttpEntity<>(null, headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        this.companyNumber = companyNumber;
+    }
+
+    @When("I send DELETE request with company number {string} without setting eric headers")
+    public void i_send_delete_request_with_company_number_no_eric_headers(String companyNumber) throws IOException {
         String uri = "/company/{company_number}/insolvency";
 
         HttpHeaders headers = new HttpHeaders();
@@ -171,6 +232,7 @@ public class InsolvencySteps {
 
     @Then("I should receive {int} status code")
     public void i_should_receive_status_code(Integer statusCode) {
+
         int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");
         Assertions.assertThat(expectedStatusCode).isEqualTo(statusCode);
     }
