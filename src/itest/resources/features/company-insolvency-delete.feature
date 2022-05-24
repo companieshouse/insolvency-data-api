@@ -9,6 +9,13 @@ Feature: Delete company insolvency information
     Then I should receive 200 status code
     And the CHS Kafka API is invoked successfully with event "deleted"
 
+  Scenario: Delete company insolvency information without setting eric headers unsuccessful
+
+    Given Insolvency data api service is running
+    And the insolvency information exists for "CH3634545"
+    When I send DELETE request with company number "CH3634545" without setting eric headers
+    Then I should receive 401 status code
+
   Scenario: Delete company insolvency information unsuccessfully
 
     Given Insolvency data api service is running
@@ -21,7 +28,7 @@ Feature: Delete company insolvency information
 
     Given Insolvency data api service is running
     When I send DELETE request without x-request-id key in the header
-    Then I should receive 500 status code
+    Then I should receive 401 status code
     And the CHS Kafka API is not invoked
 
   Scenario: Processing delete company insolvency while database is down

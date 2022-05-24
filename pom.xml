@@ -169,6 +169,10 @@
 			<artifactId>api-helper-java</artifactId>
 			<version>${api-helper-java-library.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
