@@ -6,7 +6,7 @@ import java.util.Date;
 
 import org.springframework.core.convert.converter.Converter;
 
-public class OffsetDateTimeReader implements Converter<Date, OffsetDateTime> {
+public class OffsetDateTimeReadConverter implements Converter<Date, OffsetDateTime> {
 
     @Override
     public OffsetDateTime convert(final Date date) {
