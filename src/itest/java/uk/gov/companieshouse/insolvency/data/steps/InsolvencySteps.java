@@ -71,7 +71,7 @@ public class InsolvencySteps {
         InternalData internalData = companyInsolvency.getInternalData();
         InsolvencyDocument insolvencyDocument = new InsolvencyDocument(companyNumber,
                 companyInsolvency.getExternalData(),
-                internalData.getDeltaAt().toLocalDateTime(),
+                internalData.getDeltaAt(),
                 LocalDateTime.now(),
                 internalData.getUpdatedBy());
 

@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.insolvency.data.model;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -17,10 +19,7 @@ public class InsolvencyDocument {
     private CompanyInsolvency companyInsolvency;
 
     @Field("delta_at")
-    @DateTimeFormat(
-            iso = DateTimeFormat.ISO.DATE_TIME
-    )
-    private LocalDateTime deltaAt;
+    private OffsetDateTime deltaAt;
 
     @Field("updated_at")
     @DateTimeFormat(
@@ -48,7 +47,7 @@ public class InsolvencyDocument {
      */
     public InsolvencyDocument(String id,
                               CompanyInsolvency companyInsolvency,
-                              LocalDateTime deltaAt,
+                              OffsetDateTime deltaAt,
                               LocalDateTime updatedAt,
                               String updatedBy) {
         this.id = id;
@@ -66,11 +65,11 @@ public class InsolvencyDocument {
         return companyInsolvency;
     }
 
-    public LocalDateTime getDeltaAt() {
+    public OffsetDateTime getDeltaAt() {
         return deltaAt;
     }
 
-    public void setDeltaAt(LocalDateTime deltaAt) {
+    public void setDeltaAt(OffsetDateTime deltaAt) {
         this.deltaAt = deltaAt;
     }
 
