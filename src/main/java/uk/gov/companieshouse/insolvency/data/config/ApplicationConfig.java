@@ -12,15 +12,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.environment.EnvironmentReader;
 import uk.gov.companieshouse.environment.impl.EnvironmentReaderImpl;
 import uk.gov.companieshouse.insolvency.data.converter.CompanyInsolvencyReadConverter;
 import uk.gov.companieshouse.insolvency.data.converter.CompanyInsolvencyWriteConverter;
 import uk.gov.companieshouse.insolvency.data.converter.EnumConverters;
-import uk.gov.companieshouse.insolvency.data.converter.OffsetDateTimeReader;
-import uk.gov.companieshouse.insolvency.data.converter.OffsetDateTimeWriter;
+import uk.gov.companieshouse.insolvency.data.converter.OffsetDateTimeReadConverter;
+import uk.gov.companieshouse.insolvency.data.converter.OffsetDateTimeWriteConverter;
 import uk.gov.companieshouse.insolvency.data.serialization.LocalDateDeSerializer;
 import uk.gov.companieshouse.insolvency.data.serialization.LocalDateSerializer;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -52,8 +51,8 @@ public class ApplicationConfig {
         ObjectMapper objectMapper = mongoDbObjectMapper();
         return new MongoCustomConversions(List.of(new CompanyInsolvencyWriteConverter(objectMapper),
                 new CompanyInsolvencyReadConverter(objectMapper),new EnumConverters.StringToEnum(),
-                new EnumConverters.EnumToString(), new OffsetDateTimeReader(),
-                new OffsetDateTimeWriter()));
+                new EnumConverters.EnumToString(), new OffsetDateTimeReadConverter(),
+                new OffsetDateTimeWriteConverter()));
     }
 
     private ObjectMapper mongoDbObjectMapper() {
