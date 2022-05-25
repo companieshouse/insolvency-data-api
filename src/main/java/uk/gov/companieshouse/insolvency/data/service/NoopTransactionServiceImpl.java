@@ -29,7 +29,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
     private final InsolvencyApiService insolvencyApiService;
 
     /**
-     * Insolvency service to store insolvency data onto mongodb and call chs kafka endpoint.
+     * Insolvency service to store the insolvency data onto mongodb and call chs kafka endpoint.
      *  @param logger               the logger
      * @param insolvencyRepository mongodb repository
      * @param insolvencyApiService chs-kafka api service
