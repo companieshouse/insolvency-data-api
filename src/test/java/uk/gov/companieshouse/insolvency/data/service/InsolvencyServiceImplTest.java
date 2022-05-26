@@ -20,6 +20,7 @@ import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.DocumentGoneException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
@@ -108,15 +109,15 @@ class InsolvencyServiceImplTest {
     }
 
     @Test
-    void when_company_number_doesnt_exist_then_throws_IllegalArgumentExceptionException_error() {
+    void when_company_number_doesnt_exist_then_throws_DocumentGoneException_error() {
         String companyNumber = "CH363453";
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.empty());
 
-        Assert.assertThrows(IllegalArgumentException.class, () ->
+        Assert.assertThrows(DocumentGoneException.class, () ->
                 underTest.deleteInsolvency(companyNumber, companyNumber));
 
         verify(repository, Mockito.times(0)).deleteById(Mockito.any());
-        verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
+        verify(repository, Mockito.times(1)).findById(companyNumber);
         verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), any());
     }
 
@@ -134,8 +135,8 @@ class InsolvencyServiceImplTest {
                         companyNumber)
         );
         verify(repository, Mockito.times(1)).deleteById(Mockito.any());
-        verify(repository, Mockito.times(1)).findById(Mockito.eq(companyNumber));
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), eq(document), eq(EventType.DELETED));
+        verify(repository, Mockito.times(1)).findById(companyNumber);
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(contextId, document, EventType.DELETED);
     }
 
     @Test

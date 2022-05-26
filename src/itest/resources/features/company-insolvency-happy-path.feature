@@ -35,3 +35,10 @@ Feature: Process company insolvency information
       | companyNumber | result                     |
       | CH3634545     | retrieve_by_company_number |
 
+  Scenario: Retrieve company insolvency information unsuccessfully
+
+    Given Insolvency data api service is running
+    And the insolvency information exists for "CH3634545"
+    When I send GET request with company number "CH1234567"
+    Then I should receive 410 status code
+

@@ -247,7 +247,7 @@ public class InsolvencySteps {
 
         Optional<InsolvencyDocument> actual = insolvencyRepository.findById(this.companyNumber);
 
-        assertThat(actual.isPresent()).isTrue();
+        assertThat(actual).isPresent();
 
         InsolvencyDocument expected = objectMapper.readValue(file, InsolvencyDocument.class);
 
@@ -292,7 +292,7 @@ public class InsolvencySteps {
     @Then("nothing is persisted in the database")
     public void nothing_persisted_database() {
         List<InsolvencyDocument> insolvencyDocuments = insolvencyRepository.findAll();
-        Assertions.assertThat(insolvencyDocuments).hasSize(0);
+        Assertions.assertThat(insolvencyDocuments).isEmpty();
     }
 
     private void verifyPutData(InsolvencyDocument actual, InsolvencyDocument expected) {

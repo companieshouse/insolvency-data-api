@@ -2,8 +2,7 @@ package uk.gov.companieshouse.insolvency.data.config;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,13 +12,15 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.DocumentGoneException;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.logging.Logger;
 
 @ControllerAdvice
 public class ExceptionHandlerConfig {
-
+    // The correlation identifier from the header
+    private static final String X_REQUEST_ID_HEADER = "x-request-id";
     private final Logger logger;
 
     @Autowired
@@ -35,34 +36,35 @@ public class ExceptionHandlerConfig {
      * @return error response to return.
      */
     @ExceptionHandler(value = {Exception.class})
-    public ResponseEntity<Object> handleException(Exception ex, WebRequest request) {
-        logger.error(String.format("Unexpected exception, response code: %s",
-                HttpStatus.INTERNAL_SERVER_ERROR), ex);
+    public ResponseEntity<Object> handleException(Exception ex,
+                                                  WebRequest request) {
+        String errMsg = "Unexpected exception";
+        HashMap<String, Object> data = buildExceptionResponse(errMsg);
+        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
 
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put("timestamp", LocalDateTime.now());
-        responseBody.put("message", "Unable to process the request.");
-        request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(data);
     }
 
     /**
-     * IllegalArgumentException exception handler.
+     * DocumentGoneException exception handler.
+     * Thrown when the requested document could not be found in the DB in place of status code 404.
      *
      * @param ex      exception to handle.
      * @param request request.
      * @return error response to return.
      */
-    @ExceptionHandler(value = {IllegalArgumentException.class})
-    public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
-        logger.error(String.format("Resource not found, response code: %s",
-                HttpStatus.NOT_FOUND), ex);
+    @ExceptionHandler(value = {DocumentGoneException.class})
+    public ResponseEntity<Object> handleDocumentGoneException(Exception ex,
+                                                              WebRequest request) {
+        String errMsg = "Resource gone";
+        HashMap<String, Object> data = buildExceptionResponse(errMsg);
+        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
 
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put("timestamp", LocalDateTime.now());
-        responseBody.put("message", "Resource not found.");
-        request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+        return ResponseEntity
+                .status(HttpStatus.GONE)
+                .body(data);
     }
 
     /**
@@ -75,14 +77,15 @@ public class ExceptionHandlerConfig {
      */
     @ExceptionHandler(value = {BadRequestException.class, DateTimeParseException.class,
             HttpMessageNotReadableException.class})
-    public ResponseEntity<Object> handleBadRequestException(Exception ex, WebRequest request) {
-        logger.error(String.format("Bad request, response code: %s", HttpStatus.BAD_REQUEST), ex);
+    public ResponseEntity<Object> handleBadRequestException(Exception ex,
+                                                            WebRequest request) {
+        String errMsg = "Bad request";
+        HashMap<String, Object> data = buildExceptionResponse(errMsg);
+        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
 
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put("timestamp", LocalDateTime.now());
-        responseBody.put("message", "Bad request.");
-        request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(data);
     }
 
     /**
@@ -95,14 +98,13 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {MethodNotAllowedException.class})
     public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex,
                                                                   WebRequest request) {
-        logger.error(String.format("Unable to process the request, response code: %s",
-                HttpStatus.METHOD_NOT_ALLOWED), ex);
+        String errMsg = "Unable to process the request, method not allowed";
+        HashMap<String, Object> data = buildExceptionResponse(errMsg);
+        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
 
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put("timestamp", LocalDateTime.now());
-        responseBody.put("message", "Unable to process the request.");
-        request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.METHOD_NOT_ALLOWED);
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(data);
     }
 
     /**
@@ -116,13 +118,19 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {ServiceUnavailableException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
                                                                     WebRequest request) {
-        logger.error(String.format("Service unavailable, response code: %s",
-                HttpStatus.SERVICE_UNAVAILABLE), ex);
+        String errMsg = "Service unavailable";
+        HashMap<String, Object> data = buildExceptionResponse(errMsg);
+        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
 
-        Map<String, Object> responseBody = new LinkedHashMap<>();
-        responseBody.put("timestamp", LocalDateTime.now());
-        responseBody.put("message", "Service unavailable.");
-        request.setAttribute("javax.servlet.error.exception", ex, 0);
-        return new ResponseEntity<>(responseBody, HttpStatus.SERVICE_UNAVAILABLE);
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(data);
+    }
+
+    private HashMap<String, Object> buildExceptionResponse(String errMsg) {
+        HashMap<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("message", errMsg);
+        return response;
     }
 }
