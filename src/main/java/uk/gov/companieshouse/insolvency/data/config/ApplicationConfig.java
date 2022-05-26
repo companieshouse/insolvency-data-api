@@ -61,6 +61,7 @@ public class ApplicationConfig {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         SimpleModule module = new SimpleModule();
         module.addSerializer(LocalDate.class, new LocalDateSerializer());
         module.addDeserializer(LocalDate.class, new LocalDateDeSerializer());

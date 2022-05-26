@@ -17,4 +17,16 @@ public class StringSerializer extends JsonSerializer<String> {
             jsonGenerator.writeString(string);
         }
     }
+
+    @Override
+    public boolean isEmpty(SerializerProvider provider, String value) {
+        if (value != null) {
+            String finalValue = value.trim();
+            if (finalValue.isEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
