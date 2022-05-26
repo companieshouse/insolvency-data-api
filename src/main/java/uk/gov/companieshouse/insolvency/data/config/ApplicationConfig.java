@@ -22,6 +22,7 @@ import uk.gov.companieshouse.insolvency.data.converter.OffsetDateTimeReadConvert
 import uk.gov.companieshouse.insolvency.data.converter.OffsetDateTimeWriteConverter;
 import uk.gov.companieshouse.insolvency.data.serialization.LocalDateDeSerializer;
 import uk.gov.companieshouse.insolvency.data.serialization.LocalDateSerializer;
+import uk.gov.companieshouse.insolvency.data.serialization.StringSerializer;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @Configuration
@@ -63,8 +64,8 @@ public class ApplicationConfig {
         SimpleModule module = new SimpleModule();
         module.addSerializer(LocalDate.class, new LocalDateSerializer());
         module.addDeserializer(LocalDate.class, new LocalDateDeSerializer());
+        module.addSerializer(String.class, new StringSerializer());
         objectMapper.registerModule(module);
-
         return objectMapper;
     }
 
