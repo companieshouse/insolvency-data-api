@@ -20,13 +20,10 @@ public class CustomStringSerializer extends JsonSerializer<String> {
 
     @Override
     public boolean isEmpty(SerializerProvider provider, String value) {
-        if (value != null) {
-            String finalValue = value.trim();
-            if (finalValue.isEmpty()) {
-                return true;
-            }
+        if (value == null) {
+            return false;
         }
-
-        return false;
+        String finalValue = value.trim();
+        return finalValue.isEmpty();
     }
 }
