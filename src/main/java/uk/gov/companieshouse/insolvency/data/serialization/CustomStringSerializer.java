@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 
-public class StringSerializer extends JsonSerializer<String> {
+public class CustomStringSerializer extends JsonSerializer<String> {
 
     @Override
     public void serialize(String string, JsonGenerator jsonGenerator,
