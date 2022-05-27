@@ -24,7 +24,7 @@
 		<docker-maven-plugin.version>1.0.0</docker-maven-plugin.version>
 		<jib-maven-plugin.version>3.1.1</jib-maven-plugin.version>
 		<springfox-boot-starter.version>3.0.0</springfox-boot-starter.version>
-		
+
 		<!-- Internal -->
 		<structured-logging.version>1.9.12</structured-logging.version>
 		<private-api-sdk-java.version>2.0.171</private-api-sdk-java.version>
@@ -120,6 +120,7 @@
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 			<version>${assertj-core.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
@@ -245,7 +246,7 @@
 						</goals>
 						<configuration>
 							<!-- Sets the path to the file which contains the execution model. -->
-							<destFile>${sonar.jacoco.reports}/jacoco.exec</destFile>
+							<destFile>${sonar.jacoco.reports}/jacoco-unit.exec</destFile>
 							<propertyName>surefireArgLine</propertyName>
 						</configuration>
 					</execution>
@@ -256,8 +257,8 @@
 							<goal>report</goal>
 						</goals>
 						<configuration>
-							<dataFile>${sonar.jacoco.reports}/jacoco.exec</dataFile>
-							<outputDirectory>${sonar.jacoco.reports}/jacoco</outputDirectory>
+							<dataFile>${sonar.jacoco.reports}/jacoco-unit.exec</dataFile>
+							<outputDirectory>${sonar.jacoco.reports}/jacoco-unit</outputDirectory>
 						</configuration>
 					</execution>
 					<execution>
@@ -283,6 +284,35 @@
 							<dataFile>${sonar.jacoco.reports}/jacoco-it.exec</dataFile>
 							<!-- Sets the output directory for the code coverage report. -->
 							<outputDirectory>${sonar.jacoco.reports}/jacoco-it</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>merge-unit-and-integration</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>merge</goal>
+						</goals>
+						<configuration>
+							<fileSets>
+								<fileSet>
+									<directory>${sonar.jacoco.reports}/</directory>
+									<includes>
+										<include>*.exec</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+							<destFile>${sonar.jacoco.reports}/jacoco.exec</destFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>create-merged-report</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>${sonar.jacoco.reports}/jacoco.exec</dataFile>
+							<outputDirectory>${sonar.jacoco.reports}/jacoco</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -328,29 +358,27 @@
 				<version>${maven-failsafe-plugin.version}</version>
 				<executions>
 					<execution>
-						<id>integration-test</id>
-						<phase>test</phase>
 						<goals>
 							<goal>integration-test</goal>
-						</goals>
-						<configuration>
-							<argLine>-Dfile.encoding=UTF-8</argLine>
-							<argLine>${failsafeArgLine}</argLine>
-							<classesDirectory>${project.build.outputDirectory}</classesDirectory>
-							<skipITs>${skip.integration.tests}</skipITs>
-							<includes>
-								<include>**/*ITest.java</include>
-							</includes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>verify</id>
-						<phase>verify</phase>
-						<goals>
 							<goal>verify</goal>
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<properties>
+						<property>
+							<name>listener</name>
+							<value>org.sonar.java.jacoco.JUnitListener</value>
+						</property>
+					</properties>
+					<argLine>-Dfile.encoding=UTF-8</argLine>
+					<argLine>${failsafeArgLine}</argLine>
+					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
+					<skipITs>${skip.integration.tests}</skipITs>
+					<includes>
+						<include>**/*ITest.java</include>
+					</includes>
+				</configuration>
 			</plugin>
 
 			<plugin>
@@ -380,6 +408,7 @@
 						</goals>
 					</execution>
 				</executions>
+
 				<configuration>
 					<violationSeverity>warning</violationSeverity>
 					<logViolationsToConsole>true</logViolationsToConsole>
