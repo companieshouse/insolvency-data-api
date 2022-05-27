@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.insolvency.data.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,7 +43,7 @@ public class InsolvencyController {
     @PutMapping("/company/{company_number}/insolvency")
     public ResponseEntity<Void> insolvency(@RequestHeader("x-request-id") String contextId,
             @PathVariable("company_number") String companyNumber,
-            @RequestBody InternalCompanyInsolvency requestBody
+            @Valid @RequestBody InternalCompanyInsolvency requestBody
     ) throws JsonProcessingException {
         logger.info(String.format(
                 "Payload Successfully received on PUT with context id %s and company number %s",
