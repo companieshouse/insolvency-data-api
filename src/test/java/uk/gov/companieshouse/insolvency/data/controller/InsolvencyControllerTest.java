@@ -22,6 +22,7 @@ import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.config.ExceptionHandlerConfig;
 import uk.gov.companieshouse.insolvency.data.config.WebSecurityConfig;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.DocumentGoneException;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyServiceImpl;
@@ -29,11 +30,9 @@ import uk.gov.companieshouse.logging.Logger;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -65,7 +64,7 @@ class InsolvencyControllerTest {
 
     @Test
     @DisplayName("Insolvency PUT request")
-    public void callInsolvencyPutRequest() throws Exception {
+    void callInsolvencyPutRequest() throws Exception {
         InternalCompanyInsolvency request = new InternalCompanyInsolvency();
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
@@ -83,13 +82,13 @@ class InsolvencyControllerTest {
     }
 
     @Test
-    @DisplayName("Insolvency PUT request - IllegalArgumentException status code 404 not found")
-    public void callInsolvencyPutRequestIllegalArgument() throws Exception {
+    @DisplayName("Insolvency PUT request - DocumentGoneException status code 410 gone")
+    void callInsolvencyPutRequestDocumentGone() throws Exception {
         InternalCompanyInsolvency request = new InternalCompanyInsolvency();
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doThrow(new IllegalArgumentException())
+        doThrow(new DocumentGoneException("Document not found"))
                 .when(insolvencyService).processInsolvency(anyString(), anyString(),
                         isA(InternalCompanyInsolvency.class));
 
@@ -99,12 +98,12 @@ class InsolvencyControllerTest {
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .content(gson.toJson(request)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isGone());
     }
 
     @Test
     @DisplayName("Insolvency PUT request - BadRequestException status code 400")
-    public void callInsolvencyPutRequestBadRequest() throws Exception {
+    void callInsolvencyPutRequestBadRequest() throws Exception {
         InternalCompanyInsolvency request = new InternalCompanyInsolvency();
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
@@ -124,7 +123,7 @@ class InsolvencyControllerTest {
 
     @Test
     @DisplayName("Insolvency PUT request - MethodNotAllowed status code 405")
-    public void callInsolvencyPutRequestMethodNotAllowed() throws Exception {
+    void callInsolvencyPutRequestMethodNotAllowed() throws Exception {
         InternalCompanyInsolvency request = new InternalCompanyInsolvency();
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
@@ -144,7 +143,7 @@ class InsolvencyControllerTest {
 
     @Test
     @DisplayName("Insolvency PUT request - InternalServerError status code 500")
-    public void callInsolvencyPutRequestInternalServerError() throws Exception {
+    void callInsolvencyPutRequestInternalServerError() throws Exception {
         InternalCompanyInsolvency request = new InternalCompanyInsolvency();
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
@@ -164,7 +163,7 @@ class InsolvencyControllerTest {
 
     @Test
     @DisplayName("Insolvency PUT request - ServiceUnavailable status code 503")
-    public void callInsolvencyPutRequestServiceUnavailable() throws Exception {
+    void callInsolvencyPutRequestServiceUnavailable() throws Exception {
         InternalCompanyInsolvency request = new InternalCompanyInsolvency();
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
@@ -196,9 +195,9 @@ class InsolvencyControllerTest {
     }
 
     @Test
-    @DisplayName("Insolvency DELETE request - IllegalArgumentException status code 404 not found")
-    void callInsolvencyDeleteRequestIllegalArgument() throws Exception {
-        doThrow(new IllegalArgumentException())
+    @DisplayName("Insolvency DELETE request - DocumentGoneException status code 410 gone")
+    void callInsolvencyDeleteRequestDocumentGone() throws Exception {
+        doThrow(new DocumentGoneException("Document not found"))
                 .when(insolvencyService).deleteInsolvency(anyString(), anyString());
 
         mockMvc.perform(delete(URL)
@@ -206,7 +205,7 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isGone());
     }
 
     @Test
@@ -265,5 +264,34 @@ class InsolvencyControllerTest {
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key"))
                 .andExpect(status().isServiceUnavailable());
+    }
+
+    @Test
+    @DisplayName("Insolvency GET request")
+    void callInsolvencyGetRequest() throws Exception {
+        CompanyInsolvency companyInsolvency = new CompanyInsolvency();
+        doReturn(companyInsolvency)
+                .when(insolvencyService).retrieveCompanyInsolvency(anyString());
+
+        mockMvc.perform(get(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Insolvency GET request - DocumentGoneException status code 410 gone")
+    void callInsolvencyGetRequestDocumentGone() throws Exception {
+        doThrow(new DocumentGoneException("Document not found"))
+                .when(insolvencyService).retrieveCompanyInsolvency(anyString());
+
+        mockMvc.perform(get(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key"))
+                .andExpect(status().isGone());
     }
 }

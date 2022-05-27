@@ -14,6 +14,7 @@ import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.DocumentGoneException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
@@ -120,7 +121,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                 insolvencyRepository.findById(companyNumber);
 
         InsolvencyDocument insolvencyDocument = insolvencyDocumentOptional.orElseThrow(
-                () -> new IllegalArgumentException(String.format(
+                () -> new DocumentGoneException(String.format(
                         "Resource not found for company number: %s", companyNumber)));
 
         return insolvencyDocument.getCompanyInsolvency();
@@ -133,7 +134,7 @@ public class NoopTransactionServiceImpl implements InsolvencyService {
                     insolvencyRepository.findById(companyNumber);
 
             if (insolvencyDocumentOptional.isEmpty()) {
-                throw new IllegalArgumentException(String.format(
+                throw new DocumentGoneException(String.format(
                         "Company insolvency doesn't exist for company number %s",
                         companyNumber));
             }
