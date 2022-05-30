@@ -19,7 +19,7 @@ Feature: Error and retry scenarios for company insolvency
     When CHS kafka API service is unavailable
     And I send PUT request with payload "<data>" file
     Then I should receive 503 status code
-    And the expected result should match "<result>" file
+    And nothing is persisted in the database
     And the CHS Kafka API is invoked successfully with event "changed"
 
     Examples:
