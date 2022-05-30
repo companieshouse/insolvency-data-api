@@ -46,7 +46,7 @@ test-unit:
 .PHONY: test-integration
 test-integration:
 	@# Help: Run integration tests
-	mvn integration-test verify -Dskip.unit.tests=true
+	mvn integration-test -Dskip.unit.tests=true
 
 .PHONY: run-local
 run-local: 
@@ -69,15 +69,18 @@ endif
 	cd $(tmpdir); zip -r ../$(artifact_name)-$(version).zip *
 	rm -rf $(tmpdir)
 
-.PHONY: sonar
-sonar:
-	@# Help: Run sonar scan
-	mvn sonar:sonar
+.PHONY: dist
+dist: clean build package
 
 .PHONY: sonar-pr-analysis
 sonar-pr-analysis:
 	@# Help: Run sonar scan on a PR
 	mvn sonar:sonar	-P sonar-pr-analysis
+
+.PHONY: sonar
+sonar:
+	@# Help: Run sonar scan
+	mvn sonar:sonar
 
 .PHONY: deps
 deps:
