@@ -5,10 +5,8 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.GenerateEtagUtil;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
@@ -23,9 +21,6 @@ import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 import uk.gov.companieshouse.logging.Logger;
 
 @Service
-@Primary
-@ConditionalOnProperty(
-        value = "insolvency.transactions", havingValue = "true")
 public class InsolvencyServiceImpl implements InsolvencyService {
 
     private final Logger logger;
@@ -33,9 +28,8 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     private final InsolvencyApiService insolvencyApiService;
 
     /**
-     * Insolvency service to store insolvency data onto mongodb and call chs kafka endpoint.
-     *
-     * @param logger               the logger
+     * Insolvency service to store the insolvency data onto mongodb and call chs kafka endpoint.
+     *  @param logger               the logger
      * @param insolvencyRepository mongodb repository
      * @param insolvencyApiService chs-kafka api service
      */
@@ -47,12 +41,10 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     }
 
     @Override
-    @Transactional
     public void processInsolvency(String contextId, String companyNumber,
                                   InternalCompanyInsolvency companyInsolvency) {
         InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
                 companyNumber, companyInsolvency);
-        boolean savedToDb = false;
 
         try {
 
@@ -80,30 +72,42 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                         insolvencyDocument.getCompanyInsolvency().setStatus(statusFromDb.get());
                     }
 
-                    insolvencyRepository.save(insolvencyDocument);
-                    savedToDb = true;
-                    logger.info(String.format(
-                            "Company insolvency is updated in MongoDB with "
-                                    + "context id %s and company number %s",
-                            contextId,
-                            companyNumber));
-                } else {
-                    logger.info(String.format("Insolvency not persisted as "
-                                    + "the record provided is older"
-                            + " than the one already stored, context id is %s "
+                    insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
+                            EventType.CHANGED);
+
+                    logger.info(String.format("ChsKafka api CHANGED invoked "
+                                    + "updating successfully for context id %s "
                                     + "and company number %s",
                             contextId,
                             companyNumber));
+
+                    insolvencyRepository.save(insolvencyDocument);
+                    logger.info(String.format(
+                            "Company insolvency is updated in MongoDB "
+                                    + "with context id %s and company number %s",
+                            contextId,
+                            companyNumber));
+                } else {
+                    logger.info("Insolvency not persisted as the record provided is older"
+                            + " than the one already stored.");
                 }
             } else {
                 insolvencyDocument.setDeltaAt(dateFromBodyRequest);
                 insolvencyDocument.setUpdatedAt(LocalDateTime.now());
                 insolvencyDocument.getCompanyInsolvency().setStatus(null);
+
+                insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
+                        EventType.CHANGED);
+
+                logger.info(String.format("ChsKafka api CHANGED invoked "
+                                + "creating successfully for context id %s and company number %s",
+                        contextId,
+                        companyNumber));
+
                 insolvencyRepository.save(insolvencyDocument);
-                savedToDb = true;
                 logger.info(String.format(
-                        "Company insolvency is inserted in MongoDB with "
-                                + "context id %s and company number %s",
+                        "Company insolvency is inserted in MongoDB "
+                                + "with context id %s and company number %s",
                         contextId,
                         companyNumber));
             }
@@ -111,16 +115,6 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             throw new BadRequestException(illegalArgumentEx.getMessage());
         } catch (DataAccessException dbException) {
             throw new ServiceUnavailableException(dbException.getMessage());
-        }
-
-        if (savedToDb) {
-            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
-                    EventType.CHANGED);
-
-            logger.info(String.format("ChsKafka api CHANGED invoked "
-                            + "successfully for context id %s and company number %s",
-                    contextId,
-                    companyNumber));
         }
     }
 
@@ -148,17 +142,17 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                         companyNumber));
             }
 
-            insolvencyRepository.deleteById(companyNumber);
-            logger.info(String.format(
-                    "Company insolvency is deleted in MongoDB with "
-                            + "context id %s and company number %s",
+            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocumentOptional.get(),
+                    EventType.DELETED);
+            logger.info(String.format("ChsKafka api DELETED "
+                            + "invoked successfully for context id %s and company number %s",
                     contextId,
                     companyNumber));
 
-            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocumentOptional.get(),
-                    EventType.DELETED);
-            logger.info(String.format("ChsKafka api DELETE invoked successfully "
-                            + "for context id %s and company number %s",
+            insolvencyRepository.deleteById(companyNumber);
+            logger.info(String.format(
+                    "Company insolvency is deleted in "
+                            + "MongoDB with context id %s and company number %s",
                     contextId,
                     companyNumber));
         } catch (DataAccessException dbException) {
@@ -171,7 +165,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
         InternalData internalData = insolvencyApi.getInternalData();
         CompanyInsolvency externalData = insolvencyApi.getExternalData();
 
-        //Generating the new Etag
+        //Generating new Etag
         externalData.setEtag(GenerateEtagUtil.generateEtag());
         return new InsolvencyDocument(companyNumber,
                 externalData,

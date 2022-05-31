@@ -67,7 +67,7 @@ class InsolvencyServiceImplTest {
 
         Assert.assertThrows(ServiceUnavailableException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(),
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(anyString(), any(),
                 any());
 
     }
@@ -96,7 +96,7 @@ class InsolvencyServiceImplTest {
 
         Assert.assertThrows(BadRequestException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), any());
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(anyString(), any(), any());
     }
 
     @Test
