@@ -23,8 +23,8 @@ Feature: Error and retry scenarios for company insolvency
     And the CHS Kafka API is invoked successfully with event "changed"
 
     Examples:
-      | data                             | result |
-      | case_type_compulsory_liquidation | case_type_compulsory_liquidation_output |
+      | data                             |
+      | case_type_compulsory_liquidation |
 
   Scenario: Processing company insolvency information while database is down
 

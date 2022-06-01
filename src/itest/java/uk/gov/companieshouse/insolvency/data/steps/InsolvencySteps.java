@@ -295,6 +295,11 @@ public class InsolvencySteps {
         Assertions.assertThat(insolvencyDocuments).isEmpty();
     }
 
+    @Then("the company insolvency with company number {string} still exists in the database")
+    public void company_insolvency_exists(String companyNumber) {
+        Assertions.assertThat( insolvencyRepository.existsById(companyNumber));
+    }
+
     private void verifyPutData(InsolvencyDocument actual, InsolvencyDocument expected) {
         CompanyInsolvency actualCompanyInsolvency = actual.getCompanyInsolvency();
         CompanyInsolvency expectedCompanyInsolvency = expected.getCompanyInsolvency();
