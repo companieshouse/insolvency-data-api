@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.format.annotation.DateTimeFormat;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 
-@Document(collection = "company_insolvency")
+@Document(collection = "#{@environment.getProperty('mongodb.insolvency.collection.name')}")
 public class InsolvencyDocument {
 
     @Id

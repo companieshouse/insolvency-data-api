@@ -19,6 +19,11 @@ spring:
     mongodb:
       uri: ${MONGODB_URL:mongodb://127.0.0.1:27017/insolvency}
 
+mongodb:
+  insolvency:
+    collection:
+      name: ${INSOLVENCY_COLLECTION_NAME:company_insolvency}
+
 management:
   endpoints:
     enabled-by-default: false
