@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.insolvency.data.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import org.springframework.beans.factory.annotation.Value;
