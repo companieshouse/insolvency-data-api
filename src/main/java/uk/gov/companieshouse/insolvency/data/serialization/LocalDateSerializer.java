@@ -3,9 +3,11 @@ package uk.gov.companieshouse.insolvency.data.serialization;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+
+import uk.gov.companieshouse.insolvency.data.util.DateTimeFormatter;
 
 public class LocalDateSerializer extends JsonSerializer<LocalDate> {
 
@@ -15,9 +17,7 @@ public class LocalDateSerializer extends JsonSerializer<LocalDate> {
         if (localDate == null) {
             jsonGenerator.writeNull();
         } else {
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter
-                    .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            String format = localDate.atStartOfDay().format(dateTimeFormatter);
+            String format = DateTimeFormatter.format(localDate);
             jsonGenerator.writeRawValue("ISODate(\"" + format + "\")");
         }
     }
