@@ -106,8 +106,6 @@ class ExceptionHandlerConfigTest {
                 contextCaptor.capture(), errMsgCaptor.capture(), exceptionCaptor.capture(), any());
 
         assertThat(exceptionCaptor.getValue(), instanceOf(exceptionClass));
-        Assertions.assertEquals(expectedMsg, errMsgCaptor.getValue());
-        Assertions.assertEquals(X_REQUEST_ID_VALUE, contextCaptor.getValue());
     }
 
     private static Stream<Arguments> provideExceptionParameters() {
