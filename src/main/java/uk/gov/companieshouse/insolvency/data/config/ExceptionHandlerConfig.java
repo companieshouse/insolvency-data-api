@@ -2,8 +2,11 @@ package uk.gov.companieshouse.insolvency.data.config;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,30 @@ public class ExceptionHandlerConfig {
         this.logger = logger;
     }
 
+    private void populateResponseBody(Map<String, Object> responseBody , String correlationId) {
+        responseBody.put("timestamp", LocalDateTime.now());
+        responseBody.put("message", String.format("Exception occurred while processing the API"
+                + " request with Correlation ID: %s", correlationId));
+    }
+
+    private void errorLogException(Exception ex, String correlationId) {
+        logger.errorContext(null, String.format("Exception occurred while processing the "
+                + "API request with Correlation ID: %s", correlationId), ex, null);
+    }
+
+    private Map<String, Object> responseAndLogBuilderHandler(Exception ex, WebRequest request) {
+        var correlationId = request.getHeader(X_REQUEST_ID_HEADER);
+
+        if (StringUtils.isEmpty(correlationId)) {
+            correlationId = generateShortCorrelationId();
+        }
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        populateResponseBody(responseBody, correlationId);
+        errorLogException(ex, correlationId);
+
+        return responseBody;
+    }
+
     /**
      * Runtime exception handler. Acts as the catch-all scenario.
      *
@@ -40,13 +67,8 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<Object> handleException(Exception ex,
                                                   WebRequest request) {
-        String errMsg = "Unexpected exception";
-        HashMap<String, Object> data = buildExceptionResponse(errMsg);
-        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
-
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(data);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -60,13 +82,8 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {DocumentGoneException.class})
     public ResponseEntity<Object> handleDocumentGoneException(Exception ex,
                                                               WebRequest request) {
-        String errMsg = "Resource gone";
-        HashMap<String, Object> data = buildExceptionResponse(errMsg);
-        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
-
-        return ResponseEntity
-                .status(HttpStatus.GONE)
-                .body(data);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
+                HttpStatus.GONE);
     }
 
     /**
@@ -81,13 +98,9 @@ public class ExceptionHandlerConfig {
             HttpMessageNotReadableException.class, MethodArgumentNotValidException.class})
     public ResponseEntity<Object> handleBadRequestException(Exception ex,
                                                             WebRequest request) {
-        String errMsg = "Bad request";
-        HashMap<String, Object> data = buildExceptionResponse(errMsg);
-        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
+                HttpStatus.BAD_REQUEST);
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(data);
     }
 
     /**
@@ -101,13 +114,8 @@ public class ExceptionHandlerConfig {
             HttpRequestMethodNotSupportedException.class})
     public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex,
                                                                   WebRequest request) {
-        String errMsg = "Unable to process the request, method not allowed";
-        HashMap<String, Object> data = buildExceptionResponse(errMsg);
-        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
-
-        return ResponseEntity
-                .status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(data);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
+                HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -121,19 +129,11 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {ServiceUnavailableException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
                                                                     WebRequest request) {
-        String errMsg = "Service unavailable";
-        HashMap<String, Object> data = buildExceptionResponse(errMsg);
-        logger.errorContext(request.getHeader(X_REQUEST_ID_HEADER), errMsg, ex, data);
-
-        return ResponseEntity
-                .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(data);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
+                HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    private HashMap<String, Object> buildExceptionResponse(String errMsg) {
-        HashMap<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now());
-        response.put("message", errMsg);
-        return response;
+    private String generateShortCorrelationId() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
 }
