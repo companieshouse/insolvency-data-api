@@ -20,7 +20,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.*;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
-import uk.gov.companieshouse.api.company.Data;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
@@ -35,7 +34,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig.mongoDBContainer;
 
 public class InsolvencySteps {
@@ -57,9 +55,7 @@ public class InsolvencySteps {
 
     @Autowired
     public InsolvencyApiService insolvencyApiService;
-
-    static InternalCompanyInsolvency companyInsolvency;
-
+    
     @Before
     public void dbCleanUp(){
         WiremockTestConfig.setupWiremock();

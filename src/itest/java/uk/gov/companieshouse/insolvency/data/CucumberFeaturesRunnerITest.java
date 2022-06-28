@@ -19,13 +19,4 @@ import uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig;
 @DirtiesContext
 @ActiveProfiles({"test"})
 public class CucumberFeaturesRunnerITest extends AbstractMongoConfig {
-
-    public static void start() {
-        mongoDBContainer.start();
-    }
-
-    public static void stop() {
-        mongoDBContainer.stop();
-    }
-
 }
