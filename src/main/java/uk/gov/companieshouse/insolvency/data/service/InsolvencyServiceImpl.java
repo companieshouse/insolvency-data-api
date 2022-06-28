@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
@@ -63,14 +62,6 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                     insolvencyDocument.setDeltaAt(dateFromBodyRequest);
                     insolvencyDocument.setUpdatedAt(LocalDateTime.now());
                     insolvencyDocument.getCompanyInsolvency().setStatus(null);
-
-                    var statusFromDb = Optional.ofNullable(
-                                    insolvencyDocumentFromDb.getCompanyInsolvency())
-                            .map(CompanyInsolvency::getStatus);
-
-                    if (statusFromDb.isPresent() && !statusFromDb.get().isEmpty()) {
-                        insolvencyDocument.getCompanyInsolvency().setStatus(statusFromDb.get());
-                    }
 
                     insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
                             EventType.CHANGED);
