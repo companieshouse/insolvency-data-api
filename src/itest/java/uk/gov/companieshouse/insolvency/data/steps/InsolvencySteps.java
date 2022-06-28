@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -23,16 +24,16 @@ import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
-import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.config.CucumberContext;
-import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.insolvency.data.config.WiremockTestConfig;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertTrue;
+
 import static uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig.mongoDBContainer;
 
 public class InsolvencySteps {
@@ -54,13 +55,20 @@ public class InsolvencySteps {
 
     @Autowired
     public InsolvencyApiService insolvencyApiService;
-
+    
     @Before
     public void dbCleanUp(){
+        WiremockTestConfig.setupWiremock();
+
         if (mongoDBContainer.getContainerId() == null) {
             mongoDBContainer.start();
         }
         insolvencyRepository.deleteAll();
+    }
+
+    @Given("the CHS Kafka API is reachable")
+    public void the_chs_kafka_api_is_reachable() {
+        WiremockTestConfig.stubKafkaApi(HttpStatus.OK.value());
     }
 
     @Given("the insolvency information exists for {string}")
@@ -85,13 +93,14 @@ public class InsolvencySteps {
 
     @When("I send GET request with company number {string}")
     public void i_send_get_request_with_company_number(String companyNumber) throws IOException {
+        String uri = "/company/{companyNumber}/insolvency";
+
         HttpHeaders headers = new HttpHeaders();
-        headers.set("ERIC-Identity" , "SOME_IDENTITY");
-        headers.set("ERIC-Identity-Type", "key");
+        headers.add("ERIC-Identity" , "SOME_IDENTITY");
+        headers.add("ERIC-Identity-Type", "key");
 
         HttpEntity<?> request = new HttpEntity<>(headers);
 
-        String uri = "/company/{company_number}/insolvency";
         ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, request,
                 CompanyInsolvency.class, companyNumber);
 
@@ -101,10 +110,13 @@ public class InsolvencySteps {
 
     @When("I send GET request with company number {string} without eric headers")
     public void i_send_get_request_with_company_number_without_eric_header(String companyNumber) throws IOException {
+        String uri = "/company/{companyNumber}/insolvency";
+
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<?> request = new HttpEntity<>(headers);
 
-        String uri = "/company/{company_number}/insolvency";
+        //Not setting Eric headers
+
         ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, request,
                 CompanyInsolvency.class, companyNumber);
 
@@ -114,45 +126,46 @@ public class InsolvencySteps {
 
     @When("I send PUT request with payload {string} file")
     public void i_send_put_request_with_payload(String string) throws IOException {
+
+        String companyNumber = "CH5324324";
+        String uri = "/company/{companyNumber}/insolvency";
+
         File file = new ClassPathResource("/json/input/" + string + ".json").getFile();
         InternalCompanyInsolvency companyInsolvency = objectMapper.readValue(file, InternalCompanyInsolvency.class);
 
+        this.contextId = "5234234234";
+        this.companyNumber = companyNumber;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        this.contextId = "5234234234";
-        headers.set("x-request-id", this.contextId);
+        headers.set("x-request-id", "5234234234");
         headers.set("ERIC-Identity" , "SOME_IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
 
-        HttpEntity<?> request = new HttpEntity<>(companyInsolvency, headers);
-        String uri = "/company/{company_number}/insolvency";
-        String companyNumber = "CH5324324";
+        HttpEntity<InternalCompanyInsolvency> request = new HttpEntity<>(companyInsolvency, headers);
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
 
-        this.companyNumber = companyNumber;
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
     @When("I send PUT request with payload {string} file without eric headers")
     public void i_send_put_request_with_payload_without_eric_header(String string) throws IOException {
+        String companyNumber = "CH5324324";
+        String uri = "/company/{companyNumber}/insolvency";
         File file = new ClassPathResource("/json/input/" + string + ".json").getFile();
         InternalCompanyInsolvency companyInsolvency = objectMapper.readValue(file, InternalCompanyInsolvency.class);
 
+        this.contextId = "5234234234";
+        this.companyNumber = companyNumber;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.set("x-request-id", "5234234234");
+        //Not setting Eric headers
 
-        this.contextId = "5234234234";
-        headers.set("x-request-id", this.contextId);
-
-        HttpEntity<?> request = new HttpEntity<>(companyInsolvency, headers);
-        String uri = "/company/{company_number}/insolvency";
-        String companyNumber = "CH5324324";
+        HttpEntity<InternalCompanyInsolvency> request = new HttpEntity<>(companyInsolvency, headers);
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
 
-        this.companyNumber = companyNumber;
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
@@ -164,25 +177,23 @@ public class InsolvencySteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.set("ERIC-Identity" , "SOME_IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
 
         this.contextId = "5234234234";
         headers.set("x-request-id", this.contextId);
-        headers.set("ERIC-Identity" , "SOME_IDENTITY");
-        headers.set("ERIC-Identity-Type", "key");
 
         HttpEntity<?> request = new HttpEntity<>(raw_payload, headers);
         String uri = "/company/{company_number}/insolvency";
         String companyNumber = "CH5324324";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
 
-        this.companyNumber = companyNumber;
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
     }
 
     @When("CHS kafka API service is unavailable")
     public void chs_kafka_service_unavailable() throws IOException {
-        doThrow(ServiceUnavailableException.class)
-                .when(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), any());
+        WiremockTestConfig.stubKafkaApi(HttpStatus.SERVICE_UNAVAILABLE.value());
     }
 
     @When("I send DELETE request with company number {string}")
@@ -232,7 +243,6 @@ public class InsolvencySteps {
 
     @Then("I should receive {int} status code")
     public void i_should_receive_status_code(Integer statusCode) {
-
         int expectedStatusCode = CucumberContext.CONTEXT.get("statusCode");
         Assertions.assertThat(expectedStatusCode).isEqualTo(statusCode);
     }
@@ -265,7 +275,7 @@ public class InsolvencySteps {
 
     @Then("the Get call response body should match {string} file")
     public void the_get_call_response_body_should_match(String dataFile) throws IOException {
-        File file = new ClassPathResource("/json/output/"+dataFile+".json").getFile();
+        File file = new ClassPathResource("/json/output/" + dataFile + ".json").getFile();
 
         InsolvencyDocument expectedDocument = objectMapper.readValue(file, InsolvencyDocument.class);
 
@@ -278,15 +288,14 @@ public class InsolvencySteps {
 
     @Then("the CHS Kafka API is invoked successfully with event {string}")
     public void chs_kafka_api_invoked(String event) throws IOException {
-        Optional<EventType> eventType = EventType.getEventType(event);
-        assertThat(eventType).isPresent();
-        verify(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), eq(eventType.get()));
+        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/resource-changed")));
     }
 
     @Then("the CHS Kafka API is not invoked")
     public void chs_kafka_api_not_invoked() throws IOException {
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(),
-                any(InsolvencyDocument.class), any());
+        verify(0, postRequestedFor(urlEqualTo("/resource-changed")));
+        List<ServeEvent> serverEvents = WiremockTestConfig.getServeEvents();
+        assertTrue(serverEvents.isEmpty());
     }
 
     @Then("nothing is persisted in the database")

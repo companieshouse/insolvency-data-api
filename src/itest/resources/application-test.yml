@@ -1,2 +1,12 @@
 server:
   port : 8086
+
+logger:
+  namespace: insolvency-data-api
+
+chs:
+  kafka:
+    api:
+      endpoint: ${CHS_KAFKA_API_URL:http://localhost:8888}
+      key: ${CHS_INTERNAL_API_KEY:chsInternalApiKey}
+

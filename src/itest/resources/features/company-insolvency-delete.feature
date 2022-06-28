@@ -4,6 +4,7 @@ Feature: Delete company insolvency information
   Scenario: Delete company insolvency information successfully
 
     Given Insolvency data api service is running
+    And the CHS Kafka API is reachable
     And the insolvency information exists for "CH3634545"
     When I send DELETE request with company number "CH3634545"
     Then I should receive 200 status code

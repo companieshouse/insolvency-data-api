@@ -3,6 +3,7 @@ Feature: Process company insolvency information
   Scenario Outline: Processing company insolvency information successfully
 
     Given Insolvency data api service is running
+    And the CHS Kafka API is reachable
     When I send PUT request with payload "<data>" file
     Then I should receive 200 status code
     And the expected result should match "<result>" file
