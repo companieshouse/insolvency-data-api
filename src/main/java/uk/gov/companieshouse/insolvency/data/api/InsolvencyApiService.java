@@ -20,9 +20,9 @@ import uk.gov.companieshouse.logging.Logger;
 @Service
 public class InsolvencyApiService {
 
+    private static final String CHANGED_EVENT_TYPE = "changed";
     private static final String CHANGED_RESOURCE_URI = "/resource-changed";
     private final Logger logger;
-    private final String chsKafkaUrl;
     private final ApiClientService apiClientService;
     private final ObjectMapper objectMapper;
 
@@ -32,7 +32,6 @@ public class InsolvencyApiService {
     public InsolvencyApiService(@Value("${chs.kafka.api.endpoint}") String chsKafkaUrl,
                                 ApiClientService apiClientService, ObjectMapper objectMapper,
                                 Logger logger) {
-        this.chsKafkaUrl = chsKafkaUrl;
         this.apiClientService = apiClientService;
         this.objectMapper = objectMapper;
         this.logger = logger;
@@ -47,7 +46,6 @@ public class InsolvencyApiService {
                                                InsolvencyDocument insolvencyDocument,
                                                EventType eventType) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
-        internalApiClient.setBasePath(chsKafkaUrl);
 
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler().postChangedResource(
@@ -77,7 +75,7 @@ public class InsolvencyApiService {
         String resourceUri = "/company/" + insolvencyDocument.getId() + "/insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
-        event.setType(eventType.getEvent());
+        event.setType(CHANGED_EVENT_TYPE);
         event.publishedAt(String.valueOf(OffsetDateTime.now()));
 
         ChangedResource changedResource = new ChangedResource();

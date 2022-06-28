@@ -53,4 +53,6 @@ public class EricTokenAuthenticationFilterTest {
 
         verify(filterChain, times(0)).doFilter(request, response);
     }
+
+
 }
