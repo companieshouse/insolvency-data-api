@@ -22,7 +22,7 @@ import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.config.ExceptionHandlerConfig;
 import uk.gov.companieshouse.insolvency.data.config.WebSecurityConfig;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
-import uk.gov.companieshouse.insolvency.data.exceptions.DocumentGoneException;
+import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyServiceImpl;
@@ -88,7 +88,7 @@ class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doThrow(new DocumentGoneException("Document not found"))
+        doThrow(new DocumentNotFoundException("Document not found"))
                 .when(insolvencyService).processInsolvency(anyString(), anyString(),
                         isA(InternalCompanyInsolvency.class));
 
@@ -197,7 +197,7 @@ class InsolvencyControllerTest {
     @Test
     @DisplayName("Insolvency DELETE request - DocumentGoneException status code 410 gone")
     void callInsolvencyDeleteRequestDocumentGone() throws Exception {
-        doThrow(new DocumentGoneException("Document not found"))
+        doThrow(new DocumentNotFoundException("Document not found"))
                 .when(insolvencyService).deleteInsolvency(anyString(), anyString());
 
         mockMvc.perform(delete(URL)
@@ -282,9 +282,9 @@ class InsolvencyControllerTest {
     }
 
     @Test
-    @DisplayName("Insolvency GET request - DocumentGoneException status code 410 gone")
-    void callInsolvencyGetRequestDocumentGone() throws Exception {
-        doThrow(new DocumentGoneException("Document not found"))
+    @DisplayName("Insolvency GET request - DocumentNotFoundException status code 404 not found")
+    void callInsolvencyGetRequestDocumentnotFound() throws Exception {
+        doThrow(new DocumentNotFoundException("Document not found"))
                 .when(insolvencyService).retrieveCompanyInsolvency(anyString());
 
         mockMvc.perform(get(URL)
@@ -292,6 +292,6 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key"))
-                .andExpect(status().isGone());
+                .andExpect(status().isNotFound());
     }
 }

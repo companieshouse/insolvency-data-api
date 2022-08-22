@@ -20,7 +20,7 @@ import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
-import uk.gov.companieshouse.insolvency.data.exceptions.DocumentGoneException;
+import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
@@ -109,11 +109,11 @@ class InsolvencyServiceImplTest {
     }
 
     @Test
-    void when_company_number_doesnt_exist_then_throws_DocumentGoneException_error() {
+    void when_company_number_doesnt_exist_then_throws_DocumentNotFoundException_error() {
         String companyNumber = "CH363453";
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.empty());
 
-        Assert.assertThrows(DocumentGoneException.class, () ->
+        Assert.assertThrows(DocumentNotFoundException.class, () ->
                 underTest.deleteInsolvency(companyNumber, companyNumber));
 
         verify(repository, Mockito.times(0)).deleteById(Mockito.any());
