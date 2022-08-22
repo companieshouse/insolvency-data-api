@@ -22,6 +22,7 @@ import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.config.ExceptionHandlerConfig;
 import uk.gov.companieshouse.insolvency.data.config.WebSecurityConfig;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.DocumentGoneException;
 import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
@@ -88,7 +89,7 @@ class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doThrow(new DocumentNotFoundException("Document not found"))
+        doThrow(new DocumentGoneException("Document not found"))
                 .when(insolvencyService).processInsolvency(anyString(), anyString(),
                         isA(InternalCompanyInsolvency.class));
 
@@ -197,7 +198,7 @@ class InsolvencyControllerTest {
     @Test
     @DisplayName("Insolvency DELETE request - DocumentGoneException status code 410 gone")
     void callInsolvencyDeleteRequestDocumentGone() throws Exception {
-        doThrow(new DocumentNotFoundException("Document not found"))
+        doThrow(new DocumentGoneException("Document not found"))
                 .when(insolvencyService).deleteInsolvency(anyString(), anyString());
 
         mockMvc.perform(delete(URL)
