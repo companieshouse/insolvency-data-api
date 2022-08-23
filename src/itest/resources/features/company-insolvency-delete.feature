@@ -22,7 +22,7 @@ Feature: Delete company insolvency information
     Given Insolvency data api service is running
     And the insolvency information exists for "CH3634545"
     When I send DELETE request with company number "CH1234567"
-    Then I should receive 410 status code
+    Then I should receive 404 status code
     And the CHS Kafka API is not invoked
 
   Scenario: Processing delete company insolvency without 'x-request-id' key in the header
