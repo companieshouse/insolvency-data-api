@@ -24,7 +24,6 @@ import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.insolvency.data.controller.InsolvencyController;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.exceptions.DocumentGoneException;
-import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.logging.Logger;
@@ -116,7 +115,6 @@ class ExceptionHandlerConfigTest {
                 Arguments.of(405, "Unable to process the request, method not allowed",
                         MethodNotAllowedException.class),
                 Arguments.of(410, "Resource gone", DocumentGoneException.class),
-                Arguments.of(404, "Resource not found", DocumentNotFoundException.class),
                 Arguments.of(500, "Unexpected exception", RuntimeException.class),
                 Arguments.of(500, "Unexpected exception", IllegalArgumentException.class),
                 Arguments.of(503, "Service unavailable", ServiceUnavailableException.class)
