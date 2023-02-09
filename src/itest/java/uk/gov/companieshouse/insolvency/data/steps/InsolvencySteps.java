@@ -141,6 +141,7 @@ public class InsolvencySteps {
         headers.set("x-request-id", "5234234234");
         headers.set("ERIC-Identity" , "SOME_IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
         HttpEntity<InternalCompanyInsolvency> request = new HttpEntity<>(companyInsolvency, headers);
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
@@ -179,6 +180,7 @@ public class InsolvencySteps {
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.set("ERIC-Identity" , "SOME_IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
         this.contextId = "5234234234";
         headers.set("x-request-id", this.contextId);
@@ -205,6 +207,8 @@ public class InsolvencySteps {
         headers.set("x-request-id", "5234234234");
         headers.set("ERIC-Identity" , "SOME_IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
+
         var request = new HttpEntity<>(null, headers);
 
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);

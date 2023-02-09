@@ -78,8 +78,87 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Insolvency PUT request fails with missing ERIC-Authorised-Key-Privileges")
+    void callInsolvencyPutRequestMissingAuthorisation() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
+                isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(URL)
+                .contentType(APPLICATION_JSON)
+                .header("x-request-id", "5342342")
+                .header("ERIC-Identity" , "SOME_IDENTITY")
+                .header("ERIC-Identity-Type", "key")
+                .content(gson.toJson(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Insolvency PUT request fails with wrong privileges")
+    void callInsolvencyPutRequestWrongPrivileges() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
+                isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(URL)
+                .contentType(APPLICATION_JSON)
+                .header("x-request-id", "5342342")
+                .header("ERIC-Identity" , "SOME_IDENTITY")
+                .header("ERIC-Identity-Type", "key")
+                .header("ERIC-Authorised-Key-Privileges", "privilege")
+                .content(gson.toJson(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Insolvency PUT request fails with oauth2 authorisation")
+    void callInsolvencyPutRequestWrongAuthorisation() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
+                isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(URL)
+                .contentType(APPLICATION_JSON)
+                .header("x-request-id", "5342342")
+                .header("ERIC-Identity" , "SOME_IDENTITY")
+                .header("ERIC-Identity-Type", "oauth2")
+                .content(gson.toJson(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Insolvency PUT request fails with oauth2 authorisation and internal app privileges")
+    void callInsolvencyPutRequestWrongAuthorisationWithPrivileges() throws Exception {
+        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
+        request.setInternalData(new InternalData());
+        request.setExternalData(new CompanyInsolvency());
+
+        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
+                isA(InternalCompanyInsolvency.class));
+
+        mockMvc.perform(put(URL)
+                .contentType(APPLICATION_JSON)
+                .header("x-request-id", "5342342")
+                .header("ERIC-Identity" , "SOME_IDENTITY")
+                .header("ERIC-Identity-Type", "oauth2")
+                .header("ERIC-Authorised-Key-Privileges", "internal-app")
+                .content(gson.toJson(request)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -98,6 +177,7 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
                 .andExpect(status().isNotFound());
     }
@@ -118,6 +198,7 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
                 .andExpect(status().isBadRequest());
     }
@@ -138,6 +219,7 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
                 .andExpect(status().isMethodNotAllowed());
     }
@@ -158,6 +240,7 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
                 .andExpect(status().isInternalServerError());
     }
@@ -178,6 +261,7 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
                 .andExpect(status().isServiceUnavailable());
     }
@@ -191,7 +275,8 @@ class InsolvencyControllerTest {
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key"))
+                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isOk());
     }
 
@@ -205,7 +290,8 @@ class InsolvencyControllerTest {
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key"))
+                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isNotFound());
     }
 
@@ -219,7 +305,8 @@ class InsolvencyControllerTest {
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key"))
+                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -233,7 +320,8 @@ class InsolvencyControllerTest {
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key"))
+                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isMethodNotAllowed());
     }
 
@@ -248,7 +336,8 @@ class InsolvencyControllerTest {
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key"))
+                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isInternalServerError());
     }
 
@@ -263,7 +352,8 @@ class InsolvencyControllerTest {
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key"))
+                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isServiceUnavailable());
     }
 
@@ -279,6 +369,21 @@ class InsolvencyControllerTest {
                         .header("x-request-id", "5342342")
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Insolvency GET request with oauth2 success")
+    void callInsolvencyGetRequestOauth2() throws Exception {
+        CompanyInsolvency companyInsolvency = new CompanyInsolvency();
+        doReturn(companyInsolvency)
+                .when(insolvencyService).retrieveCompanyInsolvency(anyString());
+
+        mockMvc.perform(get(URL)
+                .contentType(APPLICATION_JSON)
+                .header("x-request-id", "5342342")
+                .header("ERIC-Identity" , "SOME_IDENTITY")
+                .header("ERIC-Identity-Type", "oauth2"))
                 .andExpect(status().isOk());
     }
 

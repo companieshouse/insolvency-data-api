@@ -36,6 +36,7 @@ public class EricTokenAuthenticationFilterTest {
 
         when(request.getHeader("ERIC-Identity")).thenReturn("SOME-IDENTITY");
         when(request.getHeader("ERIC-Identity-Type")).thenReturn("OAUTH2");
+        when(request.getMethod()).thenReturn("GET");
 
         ericTokenAuthenticationFilter.doFilterInternal(request, response, filterChain);
 

@@ -91,5 +91,4 @@ public class InsolvencyController {
         insolvencyService.deleteInsolvency(contextId, companyNumber);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
-
 }
