@@ -46,6 +46,7 @@ class InsolvencyServiceImplTest {
 
     @Test
     void when_insolvency_data_is_given_then_data_should_be_saved() {
+        org.junit.jupiter.api.Assertions.fail();
         InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
         String contextId = "436534543";
         String companyNumber = "CH363453";
