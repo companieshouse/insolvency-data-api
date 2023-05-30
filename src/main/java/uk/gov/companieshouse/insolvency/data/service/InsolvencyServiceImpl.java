@@ -24,7 +24,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
     private final Logger logger;
     private final InsolvencyRepository insolvencyRepository;
-    private final InsolvencyApiService insolvencyApiService;
+    //private final InsolvencyApiService insolvencyApiService;
 
     /**
      * Insolvency service to store the insolvency data onto mongodb and call chs kafka endpoint.
