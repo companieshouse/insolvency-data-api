@@ -40,6 +40,7 @@
 		<skip.unit.tests>false</skip.unit.tests>
 		<spring-cloud-contract-wiremock-version>4.1.1</spring-cloud-contract-wiremock-version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+		<maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
 		<!--sonar configuration-->
 		<sonar-maven-plugin.version>3.10.0.2594</sonar-maven-plugin.version>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
@@ -213,7 +214,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>${maven-resources-plugin.version}</version>
+					<version>${maven-checkstyle-plugin.version}</version>
 					<dependencies>
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
@@ -372,7 +373,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>${maven-resources-plugin.version}</version>
+				<version>${maven-checkstyle-plugin.version}</version>
 				<executions>
 					<execution>
 						<phase>process-sources</phase>
