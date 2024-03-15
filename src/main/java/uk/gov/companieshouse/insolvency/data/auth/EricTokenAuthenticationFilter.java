@@ -2,27 +2,29 @@ package uk.gov.companieshouse.insolvency.data.auth;
 
 import java.io.IOException;
 import java.util.Optional;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
 import uk.gov.companieshouse.logging.Logger;
 
 public class EricTokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private final Logger logger;
+    private final Logger tokenLogger;
 
     public EricTokenAuthenticationFilter(Logger logger) {
-        this.logger = logger;
+        this.tokenLogger = logger;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         String ericIdentity = request.getHeader("ERIC-Identity");
 
