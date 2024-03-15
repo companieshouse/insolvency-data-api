@@ -194,7 +194,7 @@ public class InsolvencySteps {
     }
 
     @When("CHS kafka API service is unavailable")
-    public void chs_kafka_service_unavailable() throws IOException {
+    public void chs_kafka_service_unavailable() {
         WiremockTestConfig.stubKafkaApi(HttpStatus.SERVICE_UNAVAILABLE.value());
     }
 
@@ -291,7 +291,7 @@ public class InsolvencySteps {
     }
 
     @Then("the CHS Kafka API is invoked successfully with event {string}")
-    public void chs_kafka_api_invoked() {
+    public void chs_kafka_api_invoked(String event) {
         verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/resource-changed")));
     }
 
