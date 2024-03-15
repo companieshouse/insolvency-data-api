@@ -29,7 +29,7 @@ public class EricTokenAuthenticationFilter extends OncePerRequestFilter {
         String ericIdentity = request.getHeader("ERIC-Identity");
 
         if (StringUtils.isBlank(ericIdentity)) {
-            logger.error("Request received without eric identity");
+            tokenLogger.error("Request received without eric identity");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
@@ -38,13 +38,13 @@ public class EricTokenAuthenticationFilter extends OncePerRequestFilter {
 
         if (!("key".equalsIgnoreCase(ericIdentityType)
                 || ("oauth2".equalsIgnoreCase(ericIdentityType)))) {
-            logger.error("Request received without correct eric identity type");
+            tokenLogger.error("Request received without correct eric identity type");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         if (!isKeyAuthorised(request, ericIdentityType)) {
-            logger.info("Supplied key does not have sufficient privilege for the action");
+            tokenLogger.info("Supplied key does not have sufficient privilege for the action");
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }

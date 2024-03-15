@@ -53,7 +53,7 @@ class InsolvencyControllerTest {
     @MockBean
     private InsolvencyServiceImpl insolvencyService;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting()
             .excludeFieldsWithoutExposeAnnotation()
