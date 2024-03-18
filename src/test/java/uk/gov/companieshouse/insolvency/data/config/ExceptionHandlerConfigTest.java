@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.insolvency.data.config;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,7 +70,9 @@ class ExceptionHandlerConfigTest {
     @Captor
     private ArgumentCaptor<String> errMsgCaptor;
 
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder().setPrettyPrinting()
+            .excludeFieldsWithoutExposeAnnotation()
+            .create();
 
     @BeforeEach
     void setUp() throws IllegalArgumentException {

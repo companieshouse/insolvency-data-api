@@ -34,6 +34,12 @@ build:
 	mvn package -Dmaven.test.skip=true
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
+FAIL_BUILD_CVSS_LIMIT ?= 0
+
+.PHONY: security-check
+security-check: security-report
+	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false -DfailBuildOnCVSS=$(FAIL_BUILD_CVSS_LIMIT)
+
 .PHONY: test
 test: test-integration test-unit
 	@# Help: Run all test-* targets (convenience method for developers)

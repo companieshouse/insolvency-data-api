@@ -9,7 +9,6 @@ public class OffsetDateTimeWriteConverter implements Converter<OffsetDateTime, D
 
     @Override
     public Date convert(final OffsetDateTime offsetDateTime) {
-
         return Date.from(offsetDateTime.toInstant());
     }
 

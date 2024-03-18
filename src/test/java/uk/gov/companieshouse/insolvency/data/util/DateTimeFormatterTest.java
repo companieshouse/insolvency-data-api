@@ -23,7 +23,7 @@ class DateTimeFormatterTest {
 
     @Test
     void shouldFormatGivenDateString() {
-        String formattedDate = DateTimeFormatter.format(LocalDate.of(2015, 06, 26));
+        String formattedDate = DateTimeFormatter.format(LocalDate.of(2015, 6, 26));
         assertThat(formattedDate).isNotNull();
         assertThat(formattedDate).isEqualTo("2015-06-26T00:00:00Z");
     }
