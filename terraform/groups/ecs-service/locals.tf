@@ -1,19 +1,19 @@
 # Define all hardcoded local variable and local variables looked up from data resources
 locals {
-  stack_name                 = "identity" # this must match the stack name the service deploys into
+  stack_name                 = "public-data" # this must match the stack name the service deploys into
   name_prefix                = "${local.stack_name}-${var.environment}"
   global_prefix              = "global-${var.environment}"
-  service_name               = "identity-verification-api"
+  service_name               = "insolvency-data-api"
   container_port             = 8080
   eric_port                  = "10000"
-  docker_repo                = "identity-verification-api"
+  docker_repo                = "insolvency-data-api"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
-  lb_listener_rule_priority  = 21
-  lb_listener_paths          = ["/verification/*"]
-  healthcheck_path           = "/verification/healthcheck" #healthcheck path for identity verification api
+  lb_listener_rule_priority  = 53
+  lb_listener_paths          = ["/company/*/insolvency"]
+  healthcheck_path           = "/insolvency/healthcheck" #healthcheck path for identity verification api
   healthcheck_matcher        = "200"
   s3_config_bucket           = data.vault_generic_secret.shared_s3.data["config_bucket_name"]
-  app_environment_filename   = "identity-verification-api.env"
+  app_environment_filename   = "insolvency-data-api.env"
   use_set_environment_files  = var.use_set_environment_files
   application_subnet_ids     = data.aws_subnets.application.ids
   application_subnet_pattern = local.stack_secrets["application_subnet_pattern"]
@@ -21,7 +21,7 @@ locals {
   stack_secrets   = jsondecode(data.vault_generic_secret.stack_secrets.data_json)
   service_secrets = jsondecode(data.vault_generic_secret.service_secrets.data_json)
 
-  vpc_name = data.aws_ssm_parameter.secret[format("/%s/%s", local.name_prefix, "vpc-name")].value
+  vpc_name = local.stack_secrets["vpc_name"]
 
   # create a map of secret name => secret arn to pass into ecs service module
   # using the trimprefix function to remove the prefixed path from the secret name
