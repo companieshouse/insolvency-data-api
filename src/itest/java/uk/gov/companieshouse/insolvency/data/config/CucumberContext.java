@@ -24,13 +24,11 @@ public enum CucumberContext {
     }
 
     public <T> T get(String name) {
-        return (T) testContexts.get()
-                .get(name);
+        return (T) testContexts.get().get(name);
     }
 
     public <T> T set(String name, T object) {
-        testContexts.get()
-                .put(name, object);
+        testContexts.get().put(name, object);
         return object;
     }
 }

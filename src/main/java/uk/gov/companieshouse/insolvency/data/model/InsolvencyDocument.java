@@ -30,10 +30,6 @@ public class InsolvencyDocument {
     @Field("updated_by")
     private String updatedBy;
 
-    // Temporary removed as was creating issues during update
-    //    @Version
-    //    private Long version;
-
     /**
      * Default constructor.
      */
@@ -83,9 +79,5 @@ public class InsolvencyDocument {
 
     public String getUpdatedBy() {
         return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
     }
 }

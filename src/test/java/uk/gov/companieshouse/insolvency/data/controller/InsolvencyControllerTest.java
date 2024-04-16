@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,6 @@ import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.config.ExceptionHandlerConfig;
 import uk.gov.companieshouse.insolvency.data.config.WebSecurityConfig;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
-import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
 import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
@@ -53,9 +53,11 @@ class InsolvencyControllerTest {
     @MockBean
     private InsolvencyServiceImpl insolvencyService;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    private Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder().setPrettyPrinting()
+            .excludeFieldsWithoutExposeAnnotation()
+            .create();
 
     @BeforeEach
     void setUp() {

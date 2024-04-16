@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.Document;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
+import org.springframework.lang.NonNull;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 
 @ReadingConverter
@@ -16,7 +17,7 @@ public class CompanyInsolvencyReadConverter implements Converter<Document, Compa
     }
 
     @Override
-    public CompanyInsolvency convert(Document source) {
+    public CompanyInsolvency convert(@NonNull Document source) {
         try {
             return objectMapper.readValue(source.toJson(), CompanyInsolvency.class);
         } catch (Exception ex) {

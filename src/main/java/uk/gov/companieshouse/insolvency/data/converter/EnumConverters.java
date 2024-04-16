@@ -1,12 +1,12 @@
 package uk.gov.companieshouse.insolvency.data.converter;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
+import org.springframework.lang.NonNull;
 
 public class EnumConverters {
 
@@ -23,10 +23,9 @@ public class EnumConverters {
         }
 
         @Override
-        public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+        public Object convert(Object source, @NonNull TypeDescriptor sourceType, @NonNull TypeDescriptor targetType) {
             try {
-                return targetType.getType().getDeclaredMethod("fromValue", String.class)
-                        .invoke(null, source);
+                return targetType.getType().getDeclaredMethod("fromValue", String.class).invoke(null, source);
             } catch (Exception ex) {
                 throw new IllegalArgumentException("Unexpected Enum " + targetType);
             }
@@ -42,7 +41,7 @@ public class EnumConverters {
         }
 
         @Override
-        public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+        public Object convert(Object source, @NonNull TypeDescriptor sourceType, @NonNull TypeDescriptor targetType) {
             try {
                 return sourceType.getType().getDeclaredMethod("getValue", null)
                         .invoke(source, null);

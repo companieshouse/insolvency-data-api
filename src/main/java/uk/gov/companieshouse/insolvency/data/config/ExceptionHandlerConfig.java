@@ -67,8 +67,7 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<Object> handleException(Exception ex,
                                                   WebRequest request) {
-        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
-                HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -82,8 +81,7 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {DocumentNotFoundException.class})
     public ResponseEntity<Object> handleDocumentNotFoundException(Exception ex,
                                                               WebRequest request) {
-        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
-                HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request), HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -98,8 +96,7 @@ public class ExceptionHandlerConfig {
             HttpMessageNotReadableException.class, MethodArgumentNotValidException.class})
     public ResponseEntity<Object> handleBadRequestException(Exception ex,
                                                             WebRequest request) {
-        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
-                HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request), HttpStatus.BAD_REQUEST);
 
     }
 
@@ -114,8 +111,7 @@ public class ExceptionHandlerConfig {
             HttpRequestMethodNotSupportedException.class})
     public ResponseEntity<Object> handleMethodNotAllowedException(Exception ex,
                                                                   WebRequest request) {
-        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
-                HttpStatus.METHOD_NOT_ALLOWED);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -129,8 +125,7 @@ public class ExceptionHandlerConfig {
     @ExceptionHandler(value = {ServiceUnavailableException.class})
     public ResponseEntity<Object> handleServiceUnavailableException(Exception ex,
                                                                     WebRequest request) {
-        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request),
-                HttpStatus.SERVICE_UNAVAILABLE);
+        return new ResponseEntity<>(responseAndLogBuilderHandler(ex, request), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     private String generateShortCorrelationId() {

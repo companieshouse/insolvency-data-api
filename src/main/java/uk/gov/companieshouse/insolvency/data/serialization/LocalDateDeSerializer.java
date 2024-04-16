@@ -19,7 +19,7 @@ public class LocalDateDeSerializer extends JsonDeserializer<LocalDate> {
                                  DeserializationContext deserializationContext) throws IOException {
         JsonNode jsonNode = jsonParser.readValueAsTree();
         try {
-            var dateJsonNode = jsonNode.get("$date");
+            JsonNode dateJsonNode = jsonNode.get("$date");
             if (dateJsonNode == null) {
                 return DateTimeFormatter.parse(jsonNode.textValue());
             } else if (dateJsonNode.isTextual()) {

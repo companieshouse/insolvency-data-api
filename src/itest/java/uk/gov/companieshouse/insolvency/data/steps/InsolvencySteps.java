@@ -92,7 +92,7 @@ public class InsolvencySteps {
     }
 
     @When("I send GET request with company number {string}")
-    public void i_send_get_request_with_company_number(String companyNumber) throws IOException {
+    public void i_send_get_request_with_company_number(String companyNumber) {
         String uri = "/company/{companyNumber}/insolvency";
 
         HttpHeaders headers = new HttpHeaders();
@@ -104,12 +104,12 @@ public class InsolvencySteps {
         ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, request,
                 CompanyInsolvency.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
     @When("I send GET request with company number {string} without eric headers")
-    public void i_send_get_request_with_company_number_without_eric_header(String companyNumber) throws IOException {
+    public void i_send_get_request_with_company_number_without_eric_header(String companyNumber) {
         String uri = "/company/{companyNumber}/insolvency";
 
         HttpHeaders headers = new HttpHeaders();
@@ -120,7 +120,7 @@ public class InsolvencySteps {
         ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, request,
                 CompanyInsolvency.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
     }
 
@@ -146,7 +146,7 @@ public class InsolvencySteps {
         HttpEntity<InternalCompanyInsolvency> request = new HttpEntity<>(companyInsolvency, headers);
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("I send PUT request with payload {string} file without eric headers")
@@ -167,7 +167,7 @@ public class InsolvencySteps {
         HttpEntity<InternalCompanyInsolvency> request = new HttpEntity<>(companyInsolvency, headers);
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("I send PUT request with raw payload {string} file")
@@ -190,16 +190,16 @@ public class InsolvencySteps {
         String companyNumber = "CH5324324";
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("CHS kafka API service is unavailable")
-    public void chs_kafka_service_unavailable() throws IOException {
+    public void chs_kafka_service_unavailable() {
         WiremockTestConfig.stubKafkaApi(HttpStatus.SERVICE_UNAVAILABLE.value());
     }
 
     @When("I send DELETE request with company number {string}")
-    public void i_send_delete_request_with_company_number(String companyNumber) throws IOException {
+    public void i_send_delete_request_with_company_number(String companyNumber) {
         String uri = "/company/{company_number}/insolvency";
 
         HttpHeaders headers = new HttpHeaders();
@@ -213,12 +213,12 @@ public class InsolvencySteps {
 
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         this.companyNumber = companyNumber;
     }
 
     @When("I send DELETE request with company number {string} without setting eric headers")
-    public void i_send_delete_request_with_company_number_no_eric_headers(String companyNumber) throws IOException {
+    public void i_send_delete_request_with_company_number_no_eric_headers(String companyNumber) {
         String uri = "/company/{company_number}/insolvency";
 
         HttpHeaders headers = new HttpHeaders();
@@ -228,7 +228,7 @@ public class InsolvencySteps {
 
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         this.companyNumber = companyNumber;
     }
 
@@ -242,7 +242,7 @@ public class InsolvencySteps {
 
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
 
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCodeValue());
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @Then("I should receive {int} status code")
@@ -291,13 +291,13 @@ public class InsolvencySteps {
     }
 
     @Then("the CHS Kafka API is invoked successfully with event {string}")
-    public void chs_kafka_api_invoked(String event) throws IOException {
-        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/resource-changed")));
+    public void chs_kafka_api_invoked(String event) {
+        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/private/resource-changed")));
     }
 
     @Then("the CHS Kafka API is not invoked")
-    public void chs_kafka_api_not_invoked() throws IOException {
-        verify(0, postRequestedFor(urlEqualTo("/resource-changed")));
+    public void chs_kafka_api_not_invoked() {
+        verify(0, postRequestedFor(urlEqualTo("/private/resource-changed")));
         List<ServeEvent> serverEvents = WiremockTestConfig.getServeEvents();
         assertTrue(serverEvents.isEmpty());
     }
@@ -310,7 +310,7 @@ public class InsolvencySteps {
 
     @Then("the company insolvency with company number {string} still exists in the database")
     public void company_insolvency_exists(String companyNumber) {
-        Assertions.assertThat( insolvencyRepository.existsById(companyNumber));
+        Assertions.assertThat(insolvencyRepository.existsById(companyNumber));
     }
 
     private void verifyPutData(InsolvencyDocument actual, InsolvencyDocument expected) {
