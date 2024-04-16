@@ -20,7 +20,7 @@ import uk.gov.companieshouse.logging.Logger;
 @Service
 public class InsolvencyApiService {
 
-    private static final String CHANGED_RESOURCE_URI = "/resource-changed";
+    private static final String CHANGED_RESOURCE_URI = "/private/resource-changed";
     private final Logger logger;
     private final String chsKafkaUrl;
     private final ApiClientService apiClientService;
@@ -58,13 +58,13 @@ public class InsolvencyApiService {
         } catch (ApiErrorResponseException exp) {
             HttpStatus statusCode = HttpStatus.valueOf(exp.getStatusCode());
             if (!statusCode.is2xxSuccessful() && statusCode != HttpStatus.SERVICE_UNAVAILABLE) {
-                logger.error("Unsuccessful call to /resource-changed endpoint", exp);
+                logger.error("Unsuccessful call to /private/resource-changed endpoint", exp);
                 throw new MethodNotAllowedException(exp.getMessage());
             } else if (statusCode == HttpStatus.SERVICE_UNAVAILABLE) {
-                logger.error("Service unavailable while calling /resource-changed endpoint", exp);
+                logger.error("Service unavailable while calling /private/resource-changed endpoint", exp);
                 throw new ServiceUnavailableException(exp.getMessage());
             } else {
-                logger.error("Error occurred while calling /resource-changed endpoint", exp);
+                logger.error("Error occurred while calling /private/resource-changed endpoint", exp);
                 throw new RuntimeException(exp);
             }
         }

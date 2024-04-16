@@ -37,7 +37,8 @@ build:
 FAIL_BUILD_CVSS_LIMIT ?= 0
 
 .PHONY: security-check
-security-check: security-report
+security-check:
+	mvn compile org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=11 -DassemblyAnalyzerEnabled=false
 	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false -DfailBuildOnCVSS=$(FAIL_BUILD_CVSS_LIMIT)
 	mvn org.owasp:dependency-check-maven:update-only
 	mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=4 -DassemblyAnalyzerEnabled=false

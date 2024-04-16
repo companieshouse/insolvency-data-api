@@ -57,6 +57,9 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+
+		<!-- OWASP dependency checker -->
+		<dependency-check-plugin.version>9.1.0</dependency-check-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -67,6 +70,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<!--Overriding spring-web version to remove vulnerability-->
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>6.1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -96,6 +105,13 @@
 			<groupId>uk.gov.companieshouse</groupId>
 			<artifactId>api-sdk-manager-java-library</artifactId>
 			<version>${api-sdk-manager-java-library.version}</version>
+			<exclusions>
+				<!--excluded to remove vulnerability-->
+				<exclusion>
+					<groupId>commons-collections</groupId>
+					<artifactId>commons-collections</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -125,11 +141,24 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mongodb</artifactId>
-			<scope>test</scope>
+			<exclusions>
+				<!--excluded to remove vulnerability-->
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-compress</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<exclusions>
+				<!--excluded to remove vulnerability-->
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-compress</artifactId>
+				</exclusion>
+			</exclusions>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -423,6 +452,26 @@
 								</resource>
 							</resources>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>${dependency-check-plugin.version}</version>
+				<configuration>
+					<formats>
+						<format>html</format>
+					</formats>
+					<suppressionFiles>
+						<suppressionFile>suppress.xml</suppressionFile>
+					</suppressionFiles>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
