@@ -58,8 +58,6 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
 
-		<!-- OWASP dependency checker -->
-		<dependency-check-plugin.version>9.1.0</dependency-check-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -452,26 +450,6 @@
 								</resource>
 							</resources>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.owasp</groupId>
-				<artifactId>dependency-check-maven</artifactId>
-				<version>${dependency-check-plugin.version}</version>
-				<configuration>
-					<formats>
-						<format>html</format>
-					</formats>
-					<suppressionFiles>
-						<suppressionFile>suppress.xml</suppressionFile>
-					</suppressionFiles>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
