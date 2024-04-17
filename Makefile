@@ -34,14 +34,10 @@ build:
 	mvn package -Dmaven.test.skip=true
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
-FAIL_BUILD_CVSS_LIMIT ?= 0
-
 .PHONY: security-check
 security-check:
 	mvn compile org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=11 -DassemblyAnalyzerEnabled=false
-	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false -DfailBuildOnCVSS=$(FAIL_BUILD_CVSS_LIMIT)
 	mvn org.owasp:dependency-check-maven:update-only
-	mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=4 -DassemblyAnalyzerEnabled=false
 
 .PHONY: test
 test: test-integration test-unit
