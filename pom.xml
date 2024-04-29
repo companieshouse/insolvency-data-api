@@ -57,6 +57,7 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+
 	</properties>
 
 	<dependencies>
@@ -67,6 +68,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<!--Overriding spring-web version to remove vulnerability-->
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>6.1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -96,6 +103,13 @@
 			<groupId>uk.gov.companieshouse</groupId>
 			<artifactId>api-sdk-manager-java-library</artifactId>
 			<version>${api-sdk-manager-java-library.version}</version>
+			<exclusions>
+				<!--excluded to remove vulnerability-->
+				<exclusion>
+					<groupId>commons-collections</groupId>
+					<artifactId>commons-collections</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -125,11 +139,24 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mongodb</artifactId>
-			<scope>test</scope>
+			<exclusions>
+				<!--excluded to remove vulnerability-->
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-compress</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<exclusions>
+				<!--excluded to remove vulnerability-->
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-compress</artifactId>
+				</exclusion>
+			</exclusions>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -396,8 +423,7 @@
 						<image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-build-21:latest</image>
 					</from>
 					<to>
-						//Once the pipeline is moved to shared services need to update this to image reference from shared services
-						<image>169942020521.dkr.ecr.eu-west-1.amazonaws.com/insolvency-data-api:latest</image>
+						<image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/insolvency-data-api:latest</image>
 					</to>
 				</configuration>
 			</plugin>

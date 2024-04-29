@@ -292,12 +292,12 @@ public class InsolvencySteps {
 
     @Then("the CHS Kafka API is invoked successfully with event {string}")
     public void chs_kafka_api_invoked(String event) {
-        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/resource-changed")));
+        verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/private/resource-changed")));
     }
 
     @Then("the CHS Kafka API is not invoked")
     public void chs_kafka_api_not_invoked() {
-        verify(0, postRequestedFor(urlEqualTo("/resource-changed")));
+        verify(0, postRequestedFor(urlEqualTo("/private/resource-changed")));
         List<ServeEvent> serverEvents = WiremockTestConfig.getServeEvents();
         assertTrue(serverEvents.isEmpty());
     }
