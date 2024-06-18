@@ -61,7 +61,6 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                         deltaAtFromDbStr)) {
                     insolvencyDocument.setDeltaAt(dateFromBodyRequest);
                     insolvencyDocument.setUpdatedAt(LocalDateTime.now());
-                    insolvencyDocument.getCompanyInsolvency().setStatus(null);
 
                     insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
                             EventType.CHANGED);
@@ -85,7 +84,6 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             } else {
                 insolvencyDocument.setDeltaAt(dateFromBodyRequest);
                 insolvencyDocument.setUpdatedAt(LocalDateTime.now());
-                insolvencyDocument.getCompanyInsolvency().setStatus(null);
 
                 insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
                         EventType.CHANGED);
