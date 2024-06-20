@@ -14,6 +14,20 @@ Feature: Process company insolvency information
       | case_type_compulsory_liquidation | case_type_compulsory_liquidation_output |
       | case_type_receivership           | case_type_receivership_output           |
 
+  Scenario Outline: Update existing company insolvency by unsetting the status field
+
+    Given Insolvency data api service is running
+    And the CHS Kafka API is reachable
+    And the insolvency information exists for "<companyNumber>"
+    When I send PUT request with payload "<data>" file
+    Then I should receive 200 status code
+    And the expected result should match "<result>" file
+    And the CHS Kafka API is invoked successfully with event "changed"
+
+    Examples:
+      | companyNumber  | data                                       | result                                            |
+      | CH5324324      | case_type_compulsory_liquidation_no_status | case_type_compulsory_liquidation_no_status_output |
+
   Scenario Outline: Processing company insolvency information no eric headers
 
     Given Insolvency data api service is running
