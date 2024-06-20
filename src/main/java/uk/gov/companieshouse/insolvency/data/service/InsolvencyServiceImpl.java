@@ -65,16 +65,14 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
                     EventType.CHANGED);
 
-            logger.info(String.format("ChsKafka api CHANGED invoked "
-                            + "updating successfully for context id %s "
-                            + "and company number %s",
+            logger.info(String.format(
+                    "ChsKafka api CHANGED invoked successfully for context id %s and company number %s",
                     contextId,
                     companyNumber));
 
             insolvencyRepository.save(insolvencyDocument);
             logger.info(String.format(
-                    "Company insolvency is updated in MongoDB "
-                            + "with context id %s and company number %s",
+                    "Company insolvency successfully upserted in MongoDB with context id %s and company number %s",
                     contextId,
                     companyNumber));
 
