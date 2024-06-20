@@ -91,6 +91,11 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                 () -> new DocumentNotFoundException(String.format(
                         "Resource not found for company number: %s", companyNumber)));
 
+        CompanyInsolvency companyInsolvency = insolvencyDocument.getCompanyInsolvency();
+        if (companyInsolvency.getStatus().isEmpty()) {
+            companyInsolvency.setStatus(null);
+        }
+
         return insolvencyDocument.getCompanyInsolvency();
     }
 
