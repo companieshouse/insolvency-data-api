@@ -64,7 +64,6 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
             insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
                     EventType.CHANGED);
-
             logger.info(String.format(
                     "ChsKafka api CHANGED invoked successfully for context id %s and company number %s",
                     contextId,
