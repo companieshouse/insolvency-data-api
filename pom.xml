@@ -27,7 +27,7 @@
 
 		<!-- Internal -->
 		<structured-logging.version>3.0.3</structured-logging.version>
-		<private-api-sdk-java.version>unversioned</private-api-sdk-java.version>
+		<private-api-sdk-java.version>4.0.150</private-api-sdk-java.version>
 		<api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
 		<api-helper-java-library.version>3.0.1</api-helper-java-library.version>
 
