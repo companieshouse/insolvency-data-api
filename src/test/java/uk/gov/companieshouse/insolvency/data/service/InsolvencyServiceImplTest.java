@@ -79,7 +79,7 @@ class InsolvencyServiceImplTest {
         // then
         assertThrows(BadRequestException.class, executable);
         verifyNoInteractions(insolvencyApiService);
-        verify(repository, Mockito.times(0)).save(Mockito.any());
+        verify(repository, times(0)).save(any());
     }
 
     @Test
