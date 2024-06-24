@@ -48,7 +48,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
             insolvencyDocumentFromDbOptional
                     .ifPresent(existingDocument -> {
-                                if (dateFromBodyRequest.isBefore(existingDocument.getDeltaAt())) {
+                                if (!dateFromBodyRequest.isAfter(existingDocument.getDeltaAt())) {
                                     logger.info("Insolvency not persisted as the record provided is older"
                                             + " than the one already stored.");
                                     throw new IllegalArgumentException("Stale delta at");
