@@ -3,7 +3,6 @@ package uk.gov.companieshouse.insolvency.data.service;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
@@ -28,7 +27,8 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
     /**
      * Insolvency service to store the insolvency data onto mongodb and call chs kafka endpoint.
-     *  @param logger               the logger
+     *
+     * @param logger               the logger
      * @param insolvencyRepository mongodb repository
      * @param insolvencyApiService chs-kafka api service
      */
@@ -40,68 +40,41 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     }
 
     @Override
-    public void processInsolvency(String contextId, String companyNumber,
-                                  InternalCompanyInsolvency companyInsolvency) {
-        InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
-                companyNumber, companyInsolvency);
-
+    public void processInsolvency(String contextId, String companyNumber, InternalCompanyInsolvency companyInsolvency) {
         try {
-
             Optional<InsolvencyDocument> insolvencyDocumentFromDbOptional =
                     insolvencyRepository.findById(companyNumber);
             OffsetDateTime dateFromBodyRequest = companyInsolvency.getInternalData().getDeltaAt();
 
-            if (insolvencyDocumentFromDbOptional.isPresent()) {
-                InsolvencyDocument insolvencyDocumentFromDb =
-                        insolvencyDocumentFromDbOptional.get();
+            insolvencyDocumentFromDbOptional
+                    .ifPresent(existingDocument -> {
+                                if (!dateFromBodyRequest.isAfter(existingDocument.getDeltaAt())) {
+                                    logger.info("Insolvency not persisted as the record provided is older"
+                                            + " than the one already stored.");
+                                    throw new IllegalArgumentException("Stale delta at");
+                                }
+                            }
+                    );
 
-                OffsetDateTime deltaAtFromDbStr = insolvencyDocumentFromDb.getDeltaAt();
+            InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
+                    companyNumber, companyInsolvency);
 
-                if (deltaAtFromDbStr == null || dateFromBodyRequest.isAfter(
-                        deltaAtFromDbStr)) {
-                    insolvencyDocument.setDeltaAt(dateFromBodyRequest);
-                    insolvencyDocument.setUpdatedAt(LocalDateTime.now());
-                    insolvencyDocument.getCompanyInsolvency().setStatus(null);
+            insolvencyDocument.setDeltaAt(dateFromBodyRequest);
+            insolvencyDocument.setUpdatedAt(LocalDateTime.now());
 
-                    insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
-                            EventType.CHANGED);
+            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
+                    EventType.CHANGED);
+            logger.info(String.format(
+                    "ChsKafka api CHANGED invoked successfully for context id %s and company number %s",
+                    contextId,
+                    companyNumber));
 
-                    logger.info(String.format("ChsKafka api CHANGED invoked "
-                                    + "updating successfully for context id %s "
-                                    + "and company number %s",
-                            contextId,
-                            companyNumber));
+            insolvencyRepository.save(insolvencyDocument);
+            logger.info(String.format(
+                    "Company insolvency successfully upserted in MongoDB with context id %s and company number %s",
+                    contextId,
+                    companyNumber));
 
-                    insolvencyRepository.save(insolvencyDocument);
-                    logger.info(String.format(
-                            "Company insolvency is updated in MongoDB "
-                                    + "with context id %s and company number %s",
-                            contextId,
-                            companyNumber));
-                } else {
-                    logger.info("Insolvency not persisted as the record provided is older"
-                            + " than the one already stored.");
-                }
-            } else {
-                insolvencyDocument.setDeltaAt(dateFromBodyRequest);
-                insolvencyDocument.setUpdatedAt(LocalDateTime.now());
-                insolvencyDocument.getCompanyInsolvency().setStatus(null);
-
-                insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
-                        EventType.CHANGED);
-
-                logger.info(String.format("ChsKafka api CHANGED invoked "
-                                + "creating successfully for context id %s and company number %s",
-                        contextId,
-                        companyNumber));
-
-                insolvencyRepository.save(insolvencyDocument);
-                logger.info(String.format(
-                        "Company insolvency is inserted in MongoDB "
-                                + "with context id %s and company number %s",
-                        contextId,
-                        companyNumber));
-            }
         } catch (IllegalArgumentException illegalArgumentEx) {
             throw new BadRequestException(illegalArgumentEx.getMessage());
         } catch (DataAccessException dbException) {

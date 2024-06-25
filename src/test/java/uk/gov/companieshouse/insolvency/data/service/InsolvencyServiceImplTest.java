@@ -1,14 +1,27 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -26,9 +39,6 @@ import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 import uk.gov.companieshouse.logging.Logger;
 
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class InsolvencyServiceImplTest {
 
@@ -43,6 +53,34 @@ class InsolvencyServiceImplTest {
 
     @InjectMocks
     private InsolvencyServiceImpl underTest;
+
+    @ParameterizedTest
+    @CsvSource({
+            "2021-03-08T12:00:00.000Z , 2022-03-08T12:00:00.000Z",
+            "2022-03-08T12:00:00.000Z , 2022-03-08T12:00:00.000Z"
+    })
+    void when_request_is_stale_then_data_should_not_be_saved(OffsetDateTime requestDeltaAt, OffsetDateTime existingDeltaAt) {
+        // given
+        final String companyNumber = "CN123456";
+        final String contextId = "context_id";
+
+        InternalCompanyInsolvency internalCompanyInsolvency = createInternalCompanyInsolvency();
+        internalCompanyInsolvency.getInternalData().setDeltaAt(requestDeltaAt);
+
+        InsolvencyDocument existingDocument = new InsolvencyDocument();
+        existingDocument.setDeltaAt(existingDeltaAt);
+        Optional<InsolvencyDocument> existingDocumentOptional = Optional.of(existingDocument);
+
+        when(repository.findById(anyString())).thenReturn(existingDocumentOptional);
+
+        // when
+        Executable executable = () -> underTest.processInsolvency(contextId, companyNumber, internalCompanyInsolvency);
+
+        // then
+        assertThrows(BadRequestException.class, executable);
+        verifyNoInteractions(insolvencyApiService);
+        verify(repository, times(0)).save(any());
+    }
 
     @Test
     void when_insolvency_data_is_given_then_data_should_be_saved() {

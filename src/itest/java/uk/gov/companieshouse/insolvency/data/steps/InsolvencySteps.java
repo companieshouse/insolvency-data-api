@@ -269,6 +269,7 @@ public class InsolvencySteps {
 
         // Verify that the time inserted is after the input
         assertThat(actualDocument.getUpdatedAt()).isAfter(expected.getUpdatedAt());
+        assertThat(actualDocument.getCompanyInsolvency().getStatus()).isEqualTo(expected.getCompanyInsolvency().getStatus());
 
         // Matching both updatedAt since it will never match the output (Uses now time)
         LocalDateTime replacedLocalDateTime = LocalDateTime.now();
