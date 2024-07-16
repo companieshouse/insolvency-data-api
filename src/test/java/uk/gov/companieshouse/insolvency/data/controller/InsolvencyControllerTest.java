@@ -14,9 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+
+import uk.gov.companieshouse.api.charges.InternalChargeApi;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
@@ -29,12 +33,14 @@ import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableExcept
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyServiceImpl;
 import uk.gov.companieshouse.logging.Logger;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = InsolvencyController.class)
@@ -43,6 +49,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class InsolvencyControllerTest {
     private static final String COMPANY_NUMBER = "02588581";
     private static final String URL = String.format("/company/%s/insolvency", COMPANY_NUMBER);
+
+    private static final String ERIC_ALLOWED_ORIGIN="ERIC-Allowed-Origin";
+    private static final String ERIC_IDENTITY="ERIC-Identity";
+    private static final String ERIC_IDENTITY_TYPE="ERIC-Identity-Type";
+    private static final String ORIGIN="Origin";
+    private static final String ERIC_ALLOWED_ORIGIN_VALUE="some-origin";
+    private static final String ERIC_IDENTITY_VALUE="123";
+    private static final String ERIC_IDENTITY_TYPE_VALUE="key";
+    private static final String ORIGIN_VALUE="http://www.test.com";
 
     @Autowired
     private MockMvc mockMvc;
@@ -401,5 +416,54 @@ class InsolvencyControllerTest {
                         .header("ERIC-Identity" , "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void optionsChargesRequestCORS() throws Exception {
+
+        mockMvc.perform(options(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header("Origin", "")
+                )
+                .andExpect(status().isNoContent())
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS))
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS))
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_MAX_AGE))
+                .andReturn();
+    }
+
+    @Test
+    void whenCorsRequestWithValidMethod_thenProceed() throws Exception {
+        mockMvc.perform(get(URL)
+                        .header(ERIC_ALLOWED_ORIGIN, ERIC_ALLOWED_ORIGIN_VALUE)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
+                        .header(ORIGIN,ORIGIN_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void whenCorsRequestWithInvalidMethod_thenForbidden() throws Exception {
+        mockMvc.perform(put(URL)
+                        .contentType(APPLICATION_JSON)
+                        .header(ERIC_ALLOWED_ORIGIN, ERIC_ALLOWED_ORIGIN_VALUE)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
+                        .header(ORIGIN,ORIGIN_VALUE)
+                        .content(gson.toJson(null)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void whenCorsRequestWithMissingAllowedOrigin_thenForbidden() throws Exception {
+        mockMvc.perform(get(URL)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
+                        .header(ORIGIN,ORIGIN_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 }

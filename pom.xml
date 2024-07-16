@@ -30,6 +30,7 @@
 		<private-api-sdk-java.version>4.0.150</private-api-sdk-java.version>
 		<api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
 		<api-helper-java-library.version>3.0.1</api-helper-java-library.version>
+		<api-security-java.version>2.0.5</api-security-java.version>
 
 		<!-- tests -->
 		<assertj-core.version>3.25.3</assertj-core.version>
@@ -201,6 +202,11 @@
 			<artifactId>api-helper-java</artifactId>
 			<version>${api-helper-java-library.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-security-java</artifactId>
+            <version>${api-security-java.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
