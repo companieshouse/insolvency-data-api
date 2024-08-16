@@ -4,6 +4,10 @@ server:
 logger:
   namespace: insolvency-data-api
 
+logging:
+  level:
+    root: INFO
+
 chs:
   kafka:
     api:
