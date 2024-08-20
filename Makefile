@@ -48,11 +48,6 @@ build:
 	mvn package -Dmaven.test.skip=true
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
-.PHONY: security-check
-security-check:
-	mvn compile org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=11 -DassemblyAnalyzerEnabled=false
-	mvn org.owasp:dependency-check-maven:update-only
-
 .PHONY: test
 test: test-integration test-unit
 	@# Help: Run all test-* targets (convenience method for developers)
