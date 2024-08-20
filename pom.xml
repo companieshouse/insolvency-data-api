@@ -20,29 +20,29 @@
 
 		<main.class>uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication</main.class>
 
-		<maven-build-helper-plugin.version>3.5.0</maven-build-helper-plugin.version>
-		<jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
+		<maven-build-helper-plugin.version>3.6.0</maven-build-helper-plugin.version>
+		<jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
 		<springfox-boot-starter.version>3.0.0</springfox-boot-starter.version>
 		<tomakehurst.version>3.0.1</tomakehurst.version>
 
 		<!-- Internal -->
-		<structured-logging.version>3.0.3</structured-logging.version>
-		<private-api-sdk-java.version>4.0.150</private-api-sdk-java.version>
+		<structured-logging.version>3.0.9</structured-logging.version>
+		<private-api-sdk-java.version>4.0.99</private-api-sdk-java.version>
 		<api-sdk-manager-java-library.version>3.0.5</api-sdk-manager-java-library.version>
 		<api-helper-java-library.version>3.0.1</api-helper-java-library.version>
-		<api-security-java.version>2.0.5</api-security-java.version>
+		<api-security-java.version>2.0.6</api-security-java.version>
 
 		<!-- tests -->
-		<assertj-core.version>3.25.3</assertj-core.version>
-		<test-containers.version>1.19.7</test-containers.version>
+		<assertj-core.version>3.26.3</assertj-core.version>
+		<test-containers.version>1.20.1</test-containers.version>
 		<maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-		<cucumber-java.version>7.15.0</cucumber-java.version>
-		<maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
+		<cucumber-java.version>7.18.1</cucumber-java.version>
+		<maven-failsafe-plugin.version>3.3.1</maven-failsafe-plugin.version>
 		<skip.integration.tests>false</skip.integration.tests>
 		<skip.unit.tests>false</skip.unit.tests>
-		<spring-cloud-contract-wiremock-version>4.1.1</spring-cloud-contract-wiremock-version>
+		<spring-cloud-contract-wiremock-version>4.1.4</spring-cloud-contract-wiremock-version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-		<maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
+		<maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
 		<!--sonar configuration-->
 		<sonar-maven-plugin.version>3.10.0.2594</sonar-maven-plugin.version>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
@@ -54,7 +54,7 @@
 			${project.basedir}/target/site/jacoco/jacoco.xml
 		</sonar.coverage.jacoco.xmlReportPaths>
 		<sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
-		<spring.boot.version>3.2.4</spring.boot.version>
+		<spring.boot.version>3.3.2</spring.boot.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
@@ -74,7 +74,7 @@
 			<!--Overriding spring-web version to remove vulnerability-->
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>6.1.6</version>
+			<version>6.1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -140,24 +140,11 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mongodb</artifactId>
-			<exclusions>
-				<!--excluded to remove vulnerability-->
-				<exclusion>
-					<groupId>org.apache.commons</groupId>
-					<artifactId>commons-compress</artifactId>
-				</exclusion>
-			</exclusions>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<exclusions>
-				<!--excluded to remove vulnerability-->
-				<exclusion>
-					<groupId>org.apache.commons</groupId>
-					<artifactId>commons-compress</artifactId>
-				</exclusion>
-			</exclusions>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
