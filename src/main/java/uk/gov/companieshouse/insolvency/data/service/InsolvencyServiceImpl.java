@@ -33,7 +33,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
      * @param insolvencyApiService chs-kafka api service
      */
     public InsolvencyServiceImpl(Logger logger, InsolvencyRepository insolvencyRepository,
-                                 InsolvencyApiService insolvencyApiService) {
+            InsolvencyApiService insolvencyApiService) {
         this.logger = logger;
         this.insolvencyRepository = insolvencyRepository;
         this.insolvencyApiService = insolvencyApiService;
@@ -48,7 +48,8 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
             insolvencyDocumentFromDbOptional
                     .ifPresent(existingDocument -> {
-                                if (!dateFromBodyRequest.isAfter(existingDocument.getDeltaAt())) {
+                                if (existingDocument.getDeltaAt() != null
+                                        && !dateFromBodyRequest.isAfter(existingDocument.getDeltaAt())) {
                                     logger.info("Insolvency not persisted as the record provided is older"
                                             + " than the one already stored.");
                                     throw new IllegalArgumentException("Stale delta at");
@@ -125,7 +126,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     }
 
     private InsolvencyDocument mapInsolvencyDocument(String companyNumber,
-                                                     InternalCompanyInsolvency insolvencyApi) {
+            InternalCompanyInsolvency insolvencyApi) {
         InternalData internalData = insolvencyApi.getInternalData();
         CompanyInsolvency externalData = insolvencyApi.getExternalData();
 

@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.any;
@@ -59,7 +60,8 @@ class InsolvencyServiceImplTest {
             "2021-03-08T12:00:00.000Z , 2022-03-08T12:00:00.000Z",
             "2022-03-08T12:00:00.000Z , 2022-03-08T12:00:00.000Z"
     })
-    void when_request_is_stale_then_data_should_not_be_saved(OffsetDateTime requestDeltaAt, OffsetDateTime existingDeltaAt) {
+    void when_request_is_stale_then_data_should_not_be_saved(OffsetDateTime requestDeltaAt,
+            OffsetDateTime existingDeltaAt) {
         // given
         final String companyNumber = "CN123456";
         final String contextId = "context_id";
@@ -80,6 +82,29 @@ class InsolvencyServiceImplTest {
         assertThrows(BadRequestException.class, executable);
         verifyNoInteractions(insolvencyApiService);
         verify(repository, times(0)).save(any());
+    }
+
+    @Test
+    void should_process_successfully_when_existing_delta_at_is_null() {
+        // given
+        final String companyNumber = "CN123456";
+        final String contextId = "context_id";
+
+        OffsetDateTime requestDeltaAt = OffsetDateTime.parse("2021-03-08T12:00:00.000Z");
+
+        InternalCompanyInsolvency internalCompanyInsolvency = createInternalCompanyInsolvency();
+        internalCompanyInsolvency.getInternalData().setDeltaAt(requestDeltaAt);
+        InsolvencyDocument existingDocument = new InsolvencyDocument();
+
+        when(repository.findById(anyString())).thenReturn(Optional.of(existingDocument));
+
+        // when
+        underTest.processInsolvency(contextId, companyNumber, internalCompanyInsolvency);
+
+        // then
+        assertNull(existingDocument.getDeltaAt());
+        verify(repository, Mockito.times(1)).save(Mockito.any());
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), any(), eq(EventType.CHANGED));
     }
 
     @Test
@@ -114,7 +139,8 @@ class InsolvencyServiceImplTest {
     void when_insolvency_number_is_given_then_return_company_insolvency_information() {
         String companyNumber = "234234";
 
-        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
+        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(),
+                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
 
         CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency(companyNumber);
@@ -163,7 +189,8 @@ class InsolvencyServiceImplTest {
     void when_company_number_exist_then_finishes_successfully() {
         String companyNumber = "CH363453";
         String contextId = "1234";
-        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(), OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
+        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(),
+                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
 
         underTest.deleteInsolvency(contextId, companyNumber);
