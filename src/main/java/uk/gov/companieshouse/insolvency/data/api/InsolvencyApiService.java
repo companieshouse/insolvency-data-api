@@ -1,8 +1,7 @@
 package uk.gov.companieshouse.insolvency.data.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,7 @@ import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
+import uk.gov.companieshouse.insolvency.data.util.DateTimeFormatter;
 import uk.gov.companieshouse.logging.Logger;
 
 @Service
@@ -81,8 +81,7 @@ public class InsolvencyApiService {
 
         ChangedResourceEvent event = new ChangedResourceEvent();
         event.setType(eventType.getEvent());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT_SECOND_PRECISION);
-        event.publishedAt(OffsetDateTime.now().format(formatter));
+        event.publishedAt(DateTimeFormatter.formatPublishedAt(Instant.now()));
 
         ChangedResource changedResource = new ChangedResource();
         changedResource.setResourceUri(resourceUri);

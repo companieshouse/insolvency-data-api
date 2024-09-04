@@ -1,10 +1,12 @@
 package uk.gov.companieshouse.insolvency.data.util;
 
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DateTimeFormatterTest {
@@ -26,5 +28,18 @@ class DateTimeFormatterTest {
         String formattedDate = DateTimeFormatter.format(LocalDate.of(2015, 6, 26));
         assertThat(formattedDate).isNotNull();
         assertThat(formattedDate).isEqualTo("2015-06-26T00:00:00Z");
+    }
+
+    @Test
+    void shouldFormatPublishedAtDate() {
+        // given
+        Instant now = Instant.parse("2024-09-04T10:52:22.235486Z");
+        final String expected = "2024-09-04T10:52:22";
+
+        // when
+        final String actual = DateTimeFormatter.formatPublishedAt(now);
+
+        // then
+        assertEquals(expected, actual);
     }
 }

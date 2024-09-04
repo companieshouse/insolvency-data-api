@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.insolvency.data.util;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +16,9 @@ public class DateTimeFormatter {
 
     static java.time.format.DateTimeFormatter readDateTimeFormatter =
             java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    static java.time.format.DateTimeFormatter publishedAtDateTimeFormatter =
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     private DateTimeFormatter() {
 
@@ -37,6 +42,15 @@ public class DateTimeFormatter {
      */
     public static String format(LocalDate localDate) {
         return localDate.atStartOfDay().format(writeDateTimeFormatter);
+    }
+
+    /**
+     * Format publishedAt date
+     * @param now current time as Instant
+     * @return UTC time as string rounded to seconds
+     */
+    public static String formatPublishedAt(Instant now) {
+        return publishedAtDateTimeFormatter.format(now.atZone(ZoneOffset.UTC));
     }
 
 }
