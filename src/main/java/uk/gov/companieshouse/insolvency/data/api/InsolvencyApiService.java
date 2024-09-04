@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.insolvency.data.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -22,22 +21,19 @@ import uk.gov.companieshouse.logging.Logger;
 public class InsolvencyApiService {
 
     private static final String CHANGED_RESOURCE_URI = "/private/resource-changed";
-    private static final String DATE_TIME_FORMAT_SECOND_PRECISION = "yyyy-MM-dd'T'HH:mm:ss";
 
     private final Logger logger;
     private final String chsKafkaUrl;
     private final ApiClientService apiClientService;
-    private final ObjectMapper objectMapper;
 
     /**
      * Invoke Insolvency API.
      */
     public InsolvencyApiService(@Value("${chs.kafka.api.endpoint}") String chsKafkaUrl,
-            ApiClientService apiClientService, ObjectMapper objectMapper,
+            ApiClientService apiClientService,
             Logger logger) {
         this.chsKafkaUrl = chsKafkaUrl;
         this.apiClientService = apiClientService;
-        this.objectMapper = objectMapper;
         this.logger = logger;
     }
 
