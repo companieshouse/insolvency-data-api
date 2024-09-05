@@ -30,7 +30,7 @@ variable "docker_registry" {
 variable "desired_task_count" {
   type        = number
   description = "The desired ECS task count for this service"
-  default     = 3 # defaulted low for dev environments, override for production if required
+  default     = 1 # defaulted low for dev environments, override for production if required
 }
 variable "min_task_count" {
   type        = number
