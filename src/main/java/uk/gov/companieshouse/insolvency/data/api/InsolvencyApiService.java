@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,37 +14,38 @@ import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
+import uk.gov.companieshouse.insolvency.data.util.DateTimeFormatter;
 import uk.gov.companieshouse.logging.Logger;
 
 @Service
 public class InsolvencyApiService {
 
     private static final String CHANGED_RESOURCE_URI = "/private/resource-changed";
+
     private final Logger logger;
     private final String chsKafkaUrl;
     private final ApiClientService apiClientService;
-    private final ObjectMapper objectMapper;
 
     /**
      * Invoke Insolvency API.
      */
     public InsolvencyApiService(@Value("${chs.kafka.api.endpoint}") String chsKafkaUrl,
-                                ApiClientService apiClientService, ObjectMapper objectMapper,
-                                Logger logger) {
+            ApiClientService apiClientService,
+            Logger logger) {
         this.chsKafkaUrl = chsKafkaUrl;
         this.apiClientService = apiClientService;
-        this.objectMapper = objectMapper;
         this.logger = logger;
     }
 
     /**
      * Call chs-kafka api.
+     *
      * @param insolvencyDocument company insolvency document
      * @return response returned from chs-kafka api
      */
     public ApiResponse<Void> invokeChsKafkaApi(String contextId,
-                                               InsolvencyDocument insolvencyDocument,
-                                               EventType eventType) {
+            InsolvencyDocument insolvencyDocument,
+            EventType eventType) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
         internalApiClient.setBasePath(chsKafkaUrl);
         PrivateChangedResourcePost changedResourcePost =
@@ -71,13 +71,13 @@ public class InsolvencyApiService {
     }
 
     private ChangedResource mapChangedResource(String contextId,
-                                               InsolvencyDocument insolvencyDocument,
-                                               EventType eventType) {
+            InsolvencyDocument insolvencyDocument,
+            EventType eventType) {
         String resourceUri = "/company/" + insolvencyDocument.getId() + "/insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
         event.setType(eventType.getEvent());
-        event.publishedAt(String.valueOf(OffsetDateTime.now()));
+        event.publishedAt(DateTimeFormatter.formatPublishedAt(Instant.now()));
 
         ChangedResource changedResource = new ChangedResource();
         changedResource.setResourceUri(resourceUri);
