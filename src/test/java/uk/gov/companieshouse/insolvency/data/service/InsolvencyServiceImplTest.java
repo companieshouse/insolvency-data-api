@@ -58,7 +58,7 @@ class InsolvencyServiceImplTest {
     @ParameterizedTest
     @CsvSource({
             "2021-03-08T12:00:00.000Z , 2022-03-08T12:00:00.000Z",
-            "2022-03-08T12:00:00.000Z , 2022-03-08T12:00:00.000Z"
+            "2022-03-08T12:00:00.000Z , 2022-03-08T12:00:00.001Z"
     })
     void when_request_is_stale_then_data_should_not_be_saved(OffsetDateTime requestDeltaAt,
             OffsetDateTime existingDeltaAt) {
@@ -130,9 +130,7 @@ class InsolvencyServiceImplTest {
 
         Assert.assertThrows(ServiceUnavailableException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(anyString(), any(),
-                any());
-
+        verifyNoInteractions(insolvencyApiService);
     }
 
     @Test
@@ -160,7 +158,7 @@ class InsolvencyServiceImplTest {
 
         Assert.assertThrows(BadRequestException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(anyString(), any(), any());
+        verifyNoInteractions(insolvencyApiService);
     }
 
     @Test

@@ -49,7 +49,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             insolvencyDocumentFromDbOptional
                     .ifPresent(existingDocument -> {
                                 if (existingDocument.getDeltaAt() != null
-                                        && !dateFromBodyRequest.isAfter(existingDocument.getDeltaAt())) {
+                                        && dateFromBodyRequest.isBefore(existingDocument.getDeltaAt())) {
                                     logger.info("Insolvency not persisted as the record provided is older"
                                             + " than the one already stored.");
                                     throw new IllegalArgumentException("Stale delta at");
@@ -63,16 +63,16 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             insolvencyDocument.setDeltaAt(dateFromBodyRequest);
             insolvencyDocument.setUpdatedAt(LocalDateTime.now());
 
+            insolvencyRepository.save(insolvencyDocument);
+            logger.info(String.format(
+                    "Company insolvency successfully upserted in MongoDB with context id %s and company number %s",
+                    contextId,
+                    companyNumber));
+
             insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
                     EventType.CHANGED);
             logger.info(String.format(
                     "ChsKafka api CHANGED invoked successfully for context id %s and company number %s",
-                    contextId,
-                    companyNumber));
-
-            insolvencyRepository.save(insolvencyDocument);
-            logger.info(String.format(
-                    "Company insolvency successfully upserted in MongoDB with context id %s and company number %s",
                     contextId,
                     companyNumber));
 
