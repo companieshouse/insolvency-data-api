@@ -33,22 +33,17 @@ import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
+import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
-import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
-import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(MockitoExtension.class)
 class InsolvencyServiceImplTest {
 
     @Mock
     private InsolvencyRepository repository;
-
-    @Mock
-    private Logger logger;
-
     @Mock
     private InsolvencyApiService insolvencyApiService;
 
@@ -121,14 +116,14 @@ class InsolvencyServiceImplTest {
     }
 
     @Test
-    void when_connection_issue_in_db_then_throw_service_unavailable_exception() {
+    void when_connection_issue_in_db_then_throw_bad_gateway_exception() {
         InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
 
         doThrow(new DataAccessResourceFailureException("Connection broken"))
                 .when(repository)
                 .save(isA(InsolvencyDocument.class));
 
-        Assert.assertThrows(ServiceUnavailableException.class, () ->
+        assertThrows(BadGatewayException.class, () ->
                 underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
         verifyNoInteractions(insolvencyApiService);
     }
@@ -192,18 +187,13 @@ class InsolvencyServiceImplTest {
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
 
         underTest.deleteInsolvency(contextId, companyNumber);
-        verify(logger, Mockito.times(1)).info(
-                String.format("Company insolvency is deleted in MongoDB with context id %s and company number %s",
-                        contextId,
-                        companyNumber)
-        );
         verify(repository, Mockito.times(1)).deleteById(Mockito.any());
         verify(repository, Mockito.times(1)).findById(companyNumber);
         verify(insolvencyApiService, times(1)).invokeChsKafkaApi(contextId, document, EventType.DELETED);
     }
 
     @Test
-    void when_connection_issue_in_db_on_delete_then_throw_service_unavailable_exception() {
+    void when_connection_issue_in_db_on_delete_then_throw_bad_gateway_exception() {
         String companyNumber = "CH363453";
 
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(new InsolvencyDocument()));
@@ -211,19 +201,19 @@ class InsolvencyServiceImplTest {
                 .when(repository)
                 .deleteById(companyNumber);
 
-        Assert.assertThrows(ServiceUnavailableException.class, () ->
+        assertThrows(BadGatewayException.class, () ->
                 underTest.deleteInsolvency("436534543", companyNumber));
     }
 
     @Test
-    void when_connection_issue_in_db_on_find_in_delete_then_throw_service_unavailable_exception() {
+    void when_connection_issue_in_db_on_find_in_delete_then_throw_bad_gateway_exception() {
         String companyNumber = "CH363453";
 
         doThrow(new DataAccessResourceFailureException("Connection broken"))
                 .when(repository)
                 .findById(companyNumber);
 
-        Assert.assertThrows(ServiceUnavailableException.class, () ->
+        assertThrows(BadGatewayException.class, () ->
                 underTest.deleteInsolvency("436534543", companyNumber));
     }
 

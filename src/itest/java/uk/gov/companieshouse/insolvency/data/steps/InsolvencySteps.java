@@ -213,6 +213,7 @@ public class InsolvencySteps {
 
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
 
+        // FIXME : Why is this returning 500 on failure?
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         this.companyNumber = companyNumber;
     }

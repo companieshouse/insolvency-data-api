@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.insolvency.data.api;
 
+import static uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication.NAMESPACE;
+
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -11,18 +13,21 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
+import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
 import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.insolvency.data.logging.DataMapHolder;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.util.DateTimeFormatter;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 
 @Service
 public class InsolvencyApiService {
 
     private static final String CHANGED_RESOURCE_URI = "/private/resource-changed";
+    private static final Logger LOGGER = LoggerFactory.getLogger(NAMESPACE);
 
-    private final Logger logger;
     private final String chsKafkaUrl;
     private final ApiClientService apiClientService;
 
@@ -30,11 +35,9 @@ public class InsolvencyApiService {
      * Invoke Insolvency API.
      */
     public InsolvencyApiService(@Value("${chs.kafka.api.endpoint}") String chsKafkaUrl,
-            ApiClientService apiClientService,
-            Logger logger) {
+            ApiClientService apiClientService) {
         this.chsKafkaUrl = chsKafkaUrl;
         this.apiClientService = apiClientService;
-        this.logger = logger;
     }
 
     /**
@@ -54,19 +57,13 @@ public class InsolvencyApiService {
                                 contextId, insolvencyDocument, eventType)
                 );
         try {
+            LOGGER.info("Calling CHS Kafka API", DataMapHolder.getLogMap());
             return changedResourcePost.execute();
-        } catch (ApiErrorResponseException exp) {
-            HttpStatus statusCode = HttpStatus.valueOf(exp.getStatusCode());
-            if (!statusCode.is2xxSuccessful() && statusCode != HttpStatus.SERVICE_UNAVAILABLE) {
-                logger.error("Unsuccessful call to /private/resource-changed endpoint", exp);
-                throw new MethodNotAllowedException(exp.getMessage());
-            } else if (statusCode == HttpStatus.SERVICE_UNAVAILABLE) {
-                logger.error("Service unavailable while calling /private/resource-changed endpoint", exp);
-                throw new ServiceUnavailableException(exp.getMessage());
-            } else {
-                logger.error("Error occurred while calling /private/resource-changed endpoint", exp);
-                throw new RuntimeException(exp);
-            }
+        } catch (ApiErrorResponseException ex) {
+            DataMapHolder.get().status(Integer.toString(ex.getStatusCode()));
+            final String msg = "Resource changed call failed and responded with: %d".formatted(ex.getStatusCode());
+            LOGGER.info(msg, DataMapHolder.getLogMap());
+            throw new BadGatewayException(msg, ex);
         }
     }
 
@@ -89,6 +86,7 @@ public class InsolvencyApiService {
             changedResource.setDeletedData(insolvencyDocument.getCompanyInsolvency());
         }
 
+        LOGGER.info("Successfully mapped ChangedResource object", DataMapHolder.getLogMap());
         return changedResource;
     }
 
