@@ -15,7 +15,7 @@ import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
-import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.ConflictException;
 import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
 import uk.gov.companieshouse.insolvency.data.logging.DataMapHolder;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
@@ -58,7 +58,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                                         && dateFromBodyRequest.isBefore(existingDocument.getDeltaAt())) {
                                     LOGGER.error("Insolvency not persisted - stale delta at",
                                             DataMapHolder.getLogMap());
-                                    throw new IllegalArgumentException("Insolvency not persisted - stale delta at");
+                                    throw new ConflictException("Insolvency not persisted - stale delta at");
                                 }
                             }
                     );
@@ -77,9 +77,6 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                     EventType.CHANGED);
             LOGGER.info("ChsKafka api CHANGED invoked successfully", DataMapHolder.getLogMap());
 
-        } catch (IllegalArgumentException ex) {
-            LOGGER.error("Stale delta at", ex, DataMapHolder.getLogMap());
-            throw new BadRequestException("Stale delta at", ex);
         } catch (TransientDataAccessException ex) {
             LOGGER.info(RECOVERABLE_MONGO_EX_MSG, DataMapHolder.getLogMap());
             throw new BadGatewayException(RECOVERABLE_MONGO_EX_MSG, ex);

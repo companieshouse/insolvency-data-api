@@ -18,7 +18,7 @@ Feature: Error and retry scenarios for company insolvency
     Given Insolvency data api service is running
     When CHS kafka API service is unavailable
     And I send PUT request with payload "<data>" file
-    Then I should receive 503 status code
+    Then I should receive 502 status code
     And the expected result should match "<result>" file
     And the CHS Kafka API is invoked successfully with event "changed"
 
@@ -31,5 +31,5 @@ Feature: Error and retry scenarios for company insolvency
     Given Insolvency data api service is running
     And the insolvency database is down
     When I send PUT request with payload "case_type_compulsory_liquidation" file
-    Then I should receive 503 status code
+    Then I should receive 502 status code
     And the CHS Kafka API is not invoked

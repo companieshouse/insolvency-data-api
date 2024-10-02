@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.insolvency.data.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,16 +15,11 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.csrf.CsrfFilter;
 import uk.gov.companieshouse.api.filter.CustomCorsFilter;
 import uk.gov.companieshouse.insolvency.data.auth.EricTokenAuthenticationFilter;
-import uk.gov.companieshouse.logging.Logger;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
-
-    @Autowired
-    private Logger logger;
 
     /**
      * Configure Http Security.
@@ -38,7 +33,7 @@ public class WebSecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterAt(new EricTokenAuthenticationFilter(logger), BasicAuthenticationFilter.class)
+                .addFilterAt(new EricTokenAuthenticationFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new CustomCorsFilter(List.of(HttpMethod.GET.name())), CsrfFilter.class)
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .build();

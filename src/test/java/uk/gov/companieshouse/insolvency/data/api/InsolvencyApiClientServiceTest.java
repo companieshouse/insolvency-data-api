@@ -25,8 +25,6 @@ import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResource
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
-import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
-import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.logging.Logger;
 

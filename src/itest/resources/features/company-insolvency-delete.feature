@@ -47,7 +47,7 @@ Feature: Delete company insolvency information
     And the insolvency information exists for "CH3634545"
     And CHS kafka API service is unavailable
     When I send DELETE request with company number "CH3634545"
-    Then I should receive 503 status code
+    Then I should receive 502 status code
     And the CHS Kafka API is invoked successfully with event "deleted"
     And the company insolvency with company number "CH3634545" still exists in the database
 

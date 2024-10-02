@@ -11,7 +11,7 @@ logging:
 chs:
   kafka:
     api:
-      endpoint: ${CHS_KAFKA_API_URL:localhost}
+      endpoint: ${CHS_KAFKA_API_URL:http://localhost:8889}
       key: ${CHS_API_KEY:chsApiKey}
 
 springfox:

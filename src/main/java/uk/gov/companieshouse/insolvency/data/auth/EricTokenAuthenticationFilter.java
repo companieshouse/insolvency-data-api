@@ -1,35 +1,34 @@
 package uk.gov.companieshouse.insolvency.data.auth;
 
-import java.io.IOException;
-import java.util.Optional;
+import static uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication.NAMESPACE;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import java.io.IOException;
+import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
+import uk.gov.companieshouse.insolvency.data.logging.DataMapHolder;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 
 public class EricTokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private final Logger tokenLogger;
-
-    public EricTokenAuthenticationFilter(Logger logger) {
-        this.tokenLogger = logger;
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(NAMESPACE);
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         String ericIdentity = request.getHeader("ERIC-Identity");
 
         if (StringUtils.isBlank(ericIdentity)) {
-            tokenLogger.error("Request received without eric identity");
+            LOGGER.error("Request received without eric identity", DataMapHolder.getLogMap());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
@@ -38,18 +37,19 @@ public class EricTokenAuthenticationFilter extends OncePerRequestFilter {
 
         if (!("key".equalsIgnoreCase(ericIdentityType)
                 || ("oauth2".equalsIgnoreCase(ericIdentityType)))) {
-            tokenLogger.error("Request received without correct eric identity type");
+            LOGGER.error("Request received without correct eric identity type", DataMapHolder.getLogMap());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         if (!isKeyAuthorised(request, ericIdentityType)) {
-            tokenLogger.info("Supplied key does not have sufficient privilege for the action");
+            LOGGER.error("Supplied key does not have sufficient privilege for the action",
+                    DataMapHolder.getLogMap());
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 
     private boolean isKeyAuthorised(HttpServletRequest request, String ericIdentityType) {
@@ -57,7 +57,7 @@ public class EricTokenAuthenticationFilter extends OncePerRequestFilter {
 
         return request.getMethod().equals("GET")
                 || (ericIdentityType.equalsIgnoreCase("Key")
-                    && ArrayUtils.contains(privileges, "internal-app"));
+                && ArrayUtils.contains(privileges, "internal-app"));
     }
 
     private String[] getApiKeyPrivileges(HttpServletRequest request) {
