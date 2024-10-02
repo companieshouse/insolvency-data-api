@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
+import uk.gov.companieshouse.insolvency.data.config.ExceptionHandlerConfig;
 import uk.gov.companieshouse.insolvency.data.config.WebSecurityConfig;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ConflictException;
@@ -43,7 +44,7 @@ import uk.gov.companieshouse.insolvency.data.service.InsolvencyServiceImpl;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = InsolvencyController.class)
-@ContextConfiguration(classes = {InsolvencyController.class})
+@ContextConfiguration(classes = {InsolvencyController.class, ExceptionHandlerConfig.class})
 @Import({WebSecurityConfig.class})
 class InsolvencyControllerTest {
 
