@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories
 public class InsolvencyDataApiApplication {
 
-    public static String NAMESPACE = "insolvency-data-api";
+    public static final String NAMESPACE = "insolvency-data-api";
 
     public static void main(String[] args) {
         SpringApplication.run(InsolvencyDataApiApplication.class, args);

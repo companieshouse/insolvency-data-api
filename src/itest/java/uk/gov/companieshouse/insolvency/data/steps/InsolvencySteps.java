@@ -139,14 +139,14 @@ public class InsolvencySteps {
     @When("I send PUT request with payload {string} file")
     public void i_send_put_request_with_payload(String string) throws IOException {
 
-        String companyNumber = "CH5324324";
+        String coNumber = "CH5324324";
         String uri = "/company/{companyNumber}/insolvency";
 
         File file = new ClassPathResource("/json/input/" + string + ".json").getFile();
         InternalCompanyInsolvency companyInsolvency = objectMapper.readValue(file, InternalCompanyInsolvency.class);
 
         this.contextId = "5234234234";
-        this.companyNumber = companyNumber;
+        this.companyNumber = coNumber;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -156,20 +156,20 @@ public class InsolvencySteps {
         headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
         HttpEntity<InternalCompanyInsolvency> request = new HttpEntity<>(companyInsolvency, headers);
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, coNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
 
     @When("I send PUT request with payload {string} file without eric headers")
     public void i_send_put_request_with_payload_without_eric_header(String string) throws IOException {
-        String companyNumber = "CH5324324";
+        String coNumber = "CH5324324";
         String uri = "/company/{companyNumber}/insolvency";
         File file = new ClassPathResource("/json/input/" + string + ".json").getFile();
         InternalCompanyInsolvency companyInsolvency = objectMapper.readValue(file, InternalCompanyInsolvency.class);
 
         this.contextId = "5234234234";
-        this.companyNumber = companyNumber;
+        this.companyNumber = coNumber;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -177,7 +177,7 @@ public class InsolvencySteps {
         //Not setting Eric headers
 
         HttpEntity<InternalCompanyInsolvency> request = new HttpEntity<>(companyInsolvency, headers);
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, coNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -185,7 +185,7 @@ public class InsolvencySteps {
     @When("I send PUT request with raw payload {string} file")
     public void i_send_put_request_with_raw_payload(String string) throws IOException {
         File file = new ClassPathResource("/json/input/" + string + ".json").getFile();
-        String raw_payload = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        String rawPayload = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -197,10 +197,10 @@ public class InsolvencySteps {
         this.contextId = "5234234234";
         headers.set("x-request-id", this.contextId);
 
-        HttpEntity<?> request = new HttpEntity<>(raw_payload, headers);
+        HttpEntity<?> request = new HttpEntity<>(rawPayload, headers);
         String uri = "/company/{company_number}/insolvency";
-        String companyNumber = "CH5324324";
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, companyNumber);
+        String coNumber = "CH5324324";
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, request, Void.class, coNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -226,7 +226,6 @@ public class InsolvencySteps {
         ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class,
                 companyNumber);
 
-        // FIXME : Why is this returning 500 on failure?
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         this.companyNumber = companyNumber;
     }
@@ -328,7 +327,7 @@ public class InsolvencySteps {
 
     @Then("the company insolvency with company number {string} still exists in the database")
     public void company_insolvency_exists(String companyNumber) {
-        Assertions.assertThat(insolvencyRepository.existsById(companyNumber));
+        Assertions.assertThat(insolvencyRepository.existsById(companyNumber)).isTrue();
     }
 
     private void verifyPutData(InsolvencyDocument actual, InsolvencyDocument expected) {
