@@ -53,12 +53,12 @@ test: test-integration test-unit
 	@# Help: Run all test-* targets (convenience method for developers)
 
 .PHONY: test-unit
-test-unit:
+test-unit: clean
 	@# Help: Run unit tests
 	mvn test -Dskip.integration.tests=true
 
 .PHONY: test-integration
-test-integration:
+test-integration: clean
 	@# Help: Run integration tests
 	mvn integration-test -Dskip.unit.tests=true
 
