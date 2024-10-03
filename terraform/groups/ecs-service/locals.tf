@@ -9,8 +9,8 @@ locals {
   docker_repo                = "insolvency-data-api"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
   lb_listener_rule_priority  = 55
-  lb_listener_paths          = ["/company/*/insolvency","/insolvency-data-api/healthcheck"]
-  healthcheck_path           = "/insolvency-data-api/healthcheck" #healthcheck path for insolvency data api
+  lb_listener_paths          = ["/company/*/insolvency"]
+  healthcheck_path           = "/healthcheck"
   healthcheck_matcher        = "200"
   s3_config_bucket           = data.vault_generic_secret.shared_s3.data["config_bucket_name"]
   app_environment_filename   = "insolvency-data-api.env"

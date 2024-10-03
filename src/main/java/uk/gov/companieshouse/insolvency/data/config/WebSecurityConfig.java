@@ -44,7 +44,6 @@ public class WebSecurityConfig {
      */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        // Excluding healthcheck endpoint from security filter
-        return web -> web.ignoring().requestMatchers("/insolvency-data-api/healthcheck");
+        return web -> web.ignoring().requestMatchers("/healthcheck");
     }
 }
