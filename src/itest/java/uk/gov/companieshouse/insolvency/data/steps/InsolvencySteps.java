@@ -1,5 +1,20 @@
 package uk.gov.companieshouse.insolvency.data.steps;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig.mongoDBContainer;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
+import io.cucumber.java.Before;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -7,18 +22,17 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
-import io.cucumber.java.Before;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
@@ -28,13 +42,6 @@ import uk.gov.companieshouse.insolvency.data.config.CucumberContext;
 import uk.gov.companieshouse.insolvency.data.config.WiremockTestConfig;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import static uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig.mongoDBContainer;
 
 public class InsolvencySteps {
 
@@ -55,9 +62,9 @@ public class InsolvencySteps {
 
     @Autowired
     public InsolvencyApiService insolvencyApiService;
-    
+
     @Before
-    public void dbCleanUp(){
+    public void dbCleanUp() {
         WiremockTestConfig.setupWiremock();
 
         if (mongoDBContainer.getContainerId() == null) {
@@ -92,20 +99,25 @@ public class InsolvencySteps {
     }
 
     @When("I send GET request with company number {string}")
-    public void i_send_get_request_with_company_number(String companyNumber) {
+    public void i_send_get_request_with_company_number(String companyNumber) throws JsonProcessingException {
         String uri = "/company/{companyNumber}/insolvency";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("ERIC-Identity" , "SOME_IDENTITY");
+        headers.add("ERIC-Identity", "SOME_IDENTITY");
         headers.add("ERIC-Identity-Type", "key");
 
         HttpEntity<?> request = new HttpEntity<>(headers);
 
-        ResponseEntity<CompanyInsolvency> response = restTemplate.exchange(uri, HttpMethod.GET, request,
-                CompanyInsolvency.class, companyNumber);
+        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, request, String.class,
+                companyNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
-        CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+        if (response.getStatusCode().is2xxSuccessful()) {
+            CompanyInsolvency companyInsolvency = objectMapper.readValue(response.getBody(), CompanyInsolvency.class);
+            CucumberContext.CONTEXT.set("getResponseBody", companyInsolvency);
+        } else {
+            CucumberContext.CONTEXT.set("getResponseBody", response.getBody());
+        }
     }
 
     @When("I send GET request with company number {string} without eric headers")
@@ -139,7 +151,7 @@ public class InsolvencySteps {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.set("x-request-id", "5234234234");
-        headers.set("ERIC-Identity" , "SOME_IDENTITY");
+        headers.set("ERIC-Identity", "SOME_IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
@@ -178,7 +190,7 @@ public class InsolvencySteps {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("ERIC-Identity" , "SOME_IDENTITY");
+        headers.set("ERIC-Identity", "SOME_IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
@@ -205,13 +217,14 @@ public class InsolvencySteps {
         HttpHeaders headers = new HttpHeaders();
         this.contextId = "5234234234";
         headers.set("x-request-id", "5234234234");
-        headers.set("ERIC-Identity" , "SOME_IDENTITY");
+        headers.set("ERIC-Identity", "SOME_IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
 
         var request = new HttpEntity<>(null, headers);
 
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class,
+                companyNumber);
 
         // FIXME : Why is this returning 500 on failure?
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
@@ -227,7 +240,8 @@ public class InsolvencySteps {
         headers.set("x-request-id", "5234234234");
         var request = new HttpEntity<>(null, headers);
 
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class,
+                companyNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
         this.companyNumber = companyNumber;
@@ -241,7 +255,8 @@ public class InsolvencySteps {
         this.contextId = "5234234234";
         var request = new HttpEntity<>(null, headers);
 
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class, companyNumber);
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class,
+                companyNumber);
 
         CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
     }
@@ -270,7 +285,8 @@ public class InsolvencySteps {
 
         // Verify that the time inserted is after the input
         assertThat(actualDocument.getUpdatedAt()).isAfter(expected.getUpdatedAt());
-        assertThat(actualDocument.getCompanyInsolvency().getStatus()).isEqualTo(expected.getCompanyInsolvency().getStatus());
+        assertThat(actualDocument.getCompanyInsolvency().getStatus()).isEqualTo(
+                expected.getCompanyInsolvency().getStatus());
 
         // Matching both updatedAt since it will never match the output (Uses now time)
         LocalDateTime replacedLocalDateTime = LocalDateTime.now();

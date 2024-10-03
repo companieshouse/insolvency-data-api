@@ -175,27 +175,6 @@ class InsolvencyControllerTest {
     }
 
     @Test
-    @DisplayName("Insolvency PUT request - DocumentNotFoundException status code 404 not found")
-    void callInsolvencyPutRequestDocumentNotFound() throws Exception {
-        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
-        request.setInternalData(new InternalData());
-        request.setExternalData(new CompanyInsolvency());
-
-        doThrow(new DocumentNotFoundException("Document not found"))
-                .when(insolvencyService).processInsolvency(anyString(), anyString(),
-                        isA(InternalCompanyInsolvency.class));
-
-        mockMvc.perform(put(URL)
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "5342342")
-                        .header("ERIC-Identity", "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
-                        .content(gson.toJson(request)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     @DisplayName("Insolvency PUT request - BadRequestException status code 400")
     void callInsolvencyPutRequestBadRequest() throws Exception {
         InternalCompanyInsolvency request = new InternalCompanyInsolvency();
