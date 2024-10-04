@@ -22,11 +22,11 @@ import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
+import uk.gov.companieshouse.api.http.HttpClient;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
-import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(MockitoExtension.class)
 class InsolvencyApiClientServiceTest {
@@ -44,10 +44,10 @@ class InsolvencyApiClientServiceTest {
     private PrivateChangedResourcePost changedResourcePost;
 
     @Mock
-    private ApiResponse<Void> response;
+    private HttpClient httpClient;
 
     @Mock
-    private Logger logger;
+    private ApiResponse<Void> response;
 
     @InjectMocks
     private InsolvencyApiService insolvencyApiService;
@@ -56,6 +56,7 @@ class InsolvencyApiClientServiceTest {
     void should_invoke_chs_kafka_endpoint_successfully() throws ApiErrorResponseException {
 
         when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(httpClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
                 changedResourcePost);
@@ -77,6 +78,7 @@ class InsolvencyApiClientServiceTest {
     void should_invoke_chs_kafka_endpoint_delete_successfully() throws ApiErrorResponseException {
 
         when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(httpClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
                 changedResourcePost);
@@ -98,6 +100,7 @@ class InsolvencyApiClientServiceTest {
     void should_handle_exception_when_chs_kafka_endpoint_throws_exception() throws ApiErrorResponseException {
 
         when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(httpClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
                 changedResourcePost);
@@ -118,6 +121,7 @@ class InsolvencyApiClientServiceTest {
     void should_handle_exception_when_chs_kafka_endpoint_throws_appropriate_exception(int statusCode,
             String statusMessage, Class<Throwable> exception) throws ApiErrorResponseException {
         when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
+        when(internalApiClient.getHttpClient()).thenReturn(httpClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
         when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
                 changedResourcePost);

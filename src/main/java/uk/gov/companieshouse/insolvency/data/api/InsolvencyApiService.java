@@ -47,6 +47,7 @@ public class InsolvencyApiService {
             InsolvencyDocument insolvencyDocument,
             EventType eventType) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
+        internalApiClient.getHttpClient().setRequestId(contextId);
         internalApiClient.setBasePath(chsKafkaUrl);
         PrivateChangedResourcePost changedResourcePost =
                 internalApiClient.privateChangedResourceHandler().postChangedResource(
