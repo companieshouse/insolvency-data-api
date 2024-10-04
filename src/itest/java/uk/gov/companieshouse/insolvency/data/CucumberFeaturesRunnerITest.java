@@ -14,7 +14,6 @@ import uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig;
         features = "src/itest/resources/features",
         plugin = {"pretty", "json:target/cucumber-report.json"})
 @CucumberContextConfiguration
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext
 @ActiveProfiles({"test"})

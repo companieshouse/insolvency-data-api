@@ -1,9 +1,14 @@
 package uk.gov.companieshouse.insolvency.data.api;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
+import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,14 +24,9 @@ import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
-import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
-import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.logging.Logger;
-
-import java.util.stream.Stream;
-
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class InsolvencyApiClientServiceTest {
@@ -57,7 +57,8 @@ class InsolvencyApiClientServiceTest {
 
         when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
-        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(changedResourcePost);
+        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
+                changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
         ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
@@ -77,7 +78,8 @@ class InsolvencyApiClientServiceTest {
 
         when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
-        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(changedResourcePost);
+        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
+                changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
         ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
@@ -97,11 +99,11 @@ class InsolvencyApiClientServiceTest {
 
         when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
-        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(changedResourcePost);
+        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
+                changedResourcePost);
         when(changedResourcePost.execute()).thenThrow(RuntimeException.class);
 
-
-        Assert.assertThrows(RuntimeException.class, () -> insolvencyApiService.invokeChsKafkaApi
+        assertThrows(RuntimeException.class, () -> insolvencyApiService.invokeChsKafkaApi
                 ("3245435", getInsolvencyDocument(), EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
@@ -113,10 +115,12 @@ class InsolvencyApiClientServiceTest {
 
     @ParameterizedTest
     @MethodSource("provideExceptionParameters")
-    void should_handle_exception_when_chs_kafka_endpoint_throws_appropriate_exception(int statusCode, String statusMessage, Class<Throwable> exception) throws ApiErrorResponseException {
+    void should_handle_exception_when_chs_kafka_endpoint_throws_appropriate_exception(int statusCode,
+            String statusMessage, Class<Throwable> exception) throws ApiErrorResponseException {
         when(apiClientService.getInternalApiClient()).thenReturn(internalApiClient);
         when(internalApiClient.privateChangedResourceHandler()).thenReturn(privateChangedResourceHandler);
-        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(changedResourcePost);
+        when(privateChangedResourceHandler.postChangedResource(Mockito.any(), Mockito.any())).thenReturn(
+                changedResourcePost);
 
         HttpResponseException.Builder builder = new HttpResponseException.Builder(statusCode,
                 statusMessage, new HttpHeaders());
@@ -124,7 +128,7 @@ class InsolvencyApiClientServiceTest {
                 new ApiErrorResponseException(builder);
         when(changedResourcePost.execute()).thenThrow(apiErrorResponseException);
 
-        Assert.assertThrows(exception,
+        assertThrows(exception,
                 () -> insolvencyApiService.invokeChsKafkaApi
                         ("3245435", getInsolvencyDocument(), EventType.CHANGED));
 
@@ -137,8 +141,8 @@ class InsolvencyApiClientServiceTest {
 
     private static Stream<Arguments> provideExceptionParameters() {
         return Stream.of(
-                Arguments.of(503, "Service Unavailable", ServiceUnavailableException.class),
-                Arguments.of(405, "Method Not Allowed", MethodNotAllowedException.class),
+                Arguments.of(503, "Service Unavailable", BadGatewayException.class),
+                Arguments.of(405, "Method Not Allowed", BadGatewayException.class),
                 Arguments.of(500, "Internal Service Error", RuntimeException.class)
         );
     }

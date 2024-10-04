@@ -1,9 +1,21 @@
 package uk.gov.companieshouse.insolvency.data.controller;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,51 +31,35 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-
-import uk.gov.companieshouse.api.charges.InternalChargeApi;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
-import uk.gov.companieshouse.insolvency.data.config.ExceptionHandlerConfig;
 import uk.gov.companieshouse.insolvency.data.config.WebSecurityConfig;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.ConflictException;
 import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
-import uk.gov.companieshouse.insolvency.data.exceptions.MethodNotAllowedException;
-import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.insolvency.data.exceptions.InternalServerErrorException;
 import uk.gov.companieshouse.insolvency.data.service.InsolvencyServiceImpl;
-import uk.gov.companieshouse.logging.Logger;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = InsolvencyController.class)
-@ContextConfiguration(classes = {InsolvencyController.class, ExceptionHandlerConfig.class})
+@ContextConfiguration(classes = {InsolvencyController.class})
 @Import({WebSecurityConfig.class})
 class InsolvencyControllerTest {
+
     private static final String COMPANY_NUMBER = "02588581";
     private static final String URL = String.format("/company/%s/insolvency", COMPANY_NUMBER);
-
-    private static final String ERIC_ALLOWED_ORIGIN="ERIC-Allowed-Origin";
-    private static final String ERIC_IDENTITY="ERIC-Identity";
-    private static final String ERIC_IDENTITY_TYPE="ERIC-Identity-Type";
-    private static final String ORIGIN="Origin";
-    private static final String ERIC_ALLOWED_ORIGIN_VALUE="some-origin";
-    private static final String ERIC_IDENTITY_VALUE="123";
-    private static final String ERIC_IDENTITY_TYPE_VALUE="key";
-    private static final String ORIGIN_VALUE="http://www.test.com";
+    private static final String ERIC_ALLOWED_ORIGIN = "ERIC-Allowed-Origin";
+    private static final String ERIC_IDENTITY = "ERIC-Identity";
+    private static final String ERIC_IDENTITY_TYPE = "ERIC-Identity-Type";
+    private static final String ORIGIN = "Origin";
+    private static final String ERIC_ALLOWED_ORIGIN_VALUE = "some-origin";
+    private static final String ERIC_IDENTITY_VALUE = "123";
+    private static final String ERIC_IDENTITY_TYPE_VALUE = "key";
+    private static final String ORIGIN_VALUE = "http://www.test.com";
 
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private Logger logger;
 
     @MockBean
     private InsolvencyServiceImpl insolvencyService;
@@ -93,7 +89,7 @@ class InsolvencyControllerTest {
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
@@ -111,11 +107,11 @@ class InsolvencyControllerTest {
                 isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
-                .contentType(APPLICATION_JSON)
-                .header("x-request-id", "5342342")
-                .header("ERIC-Identity" , "SOME_IDENTITY")
-                .header("ERIC-Identity-Type", "key")
-                .content(gson.toJson(request)))
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .content(gson.toJson(request)))
                 .andExpect(status().isForbidden());
     }
 
@@ -130,12 +126,12 @@ class InsolvencyControllerTest {
                 isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
-                .contentType(APPLICATION_JSON)
-                .header("x-request-id", "5342342")
-                .header("ERIC-Identity" , "SOME_IDENTITY")
-                .header("ERIC-Identity-Type", "key")
-                .header("ERIC-Authorised-Key-Privileges", "privilege")
-                .content(gson.toJson(request)))
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Authorised-Key-Privileges", "privilege")
+                        .content(gson.toJson(request)))
                 .andExpect(status().isForbidden());
     }
 
@@ -150,11 +146,11 @@ class InsolvencyControllerTest {
                 isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
-                .contentType(APPLICATION_JSON)
-                .header("x-request-id", "5342342")
-                .header("ERIC-Identity" , "SOME_IDENTITY")
-                .header("ERIC-Identity-Type", "oauth2")
-                .content(gson.toJson(request)))
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "oauth2")
+                        .content(gson.toJson(request)))
                 .andExpect(status().isForbidden());
     }
 
@@ -169,34 +165,13 @@ class InsolvencyControllerTest {
                 isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
-                .contentType(APPLICATION_JSON)
-                .header("x-request-id", "5342342")
-                .header("ERIC-Identity" , "SOME_IDENTITY")
-                .header("ERIC-Identity-Type", "oauth2")
-                .header("ERIC-Authorised-Key-Privileges", "internal-app")
-                .content(gson.toJson(request)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("Insolvency PUT request - DocumentNotFoundException status code 404 not found")
-    void callInsolvencyPutRequestDocumentNotFound() throws Exception {
-        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
-        request.setInternalData(new InternalData());
-        request.setExternalData(new CompanyInsolvency());
-
-        doThrow(new DocumentNotFoundException("Document not found"))
-                .when(insolvencyService).processInsolvency(anyString(), anyString(),
-                        isA(InternalCompanyInsolvency.class));
-
-        mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "oauth2")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -213,32 +188,11 @@ class InsolvencyControllerTest {
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("Insolvency PUT request - MethodNotAllowed status code 405")
-    void callInsolvencyPutRequestMethodNotAllowed() throws Exception {
-        InternalCompanyInsolvency request = new InternalCompanyInsolvency();
-        request.setInternalData(new InternalData());
-        request.setExternalData(new CompanyInsolvency());
-
-        doThrow(new MethodNotAllowedException(String.format("Method Not Allowed - unsuccessful call to %s endpoint", URL)))
-                .when(insolvencyService).processInsolvency(anyString(), anyString(),
-                        isA(InternalCompanyInsolvency.class));
-
-        mockMvc.perform(put(URL)
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app")
-                        .content(gson.toJson(request)))
-                .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
@@ -255,7 +209,7 @@ class InsolvencyControllerTest {
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
@@ -263,35 +217,33 @@ class InsolvencyControllerTest {
     }
 
     @Test
-    @DisplayName("Insolvency PUT request - ServiceUnavailable status code 503")
-    void callInsolvencyPutRequestServiceUnavailable() throws Exception {
+    @DisplayName("Insolvency PUT request - Conflict status code 409")
+    void callInsolvencyPutRequestConflictException() throws Exception {
         InternalCompanyInsolvency request = new InternalCompanyInsolvency();
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doThrow(new ServiceUnavailableException("Service Unavailable - connection issues"))
+        doThrow(new ConflictException("Stale delta at"))
                 .when(insolvencyService).processInsolvency(anyString(), anyString(),
                         isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app")
                         .content(gson.toJson(request)))
-                .andExpect(status().isServiceUnavailable());
+                .andExpect(status().isConflict());
     }
 
     @Test
     @DisplayName("Insolvency DELETE request")
     void callInsolvencyDeleteRequest() throws Exception {
-        doNothing().when(insolvencyService).deleteInsolvency(anyString(), anyString());
-
         mockMvc.perform(delete(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isOk());
@@ -306,7 +258,7 @@ class InsolvencyControllerTest {
         mockMvc.perform(delete(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isNotFound());
@@ -321,25 +273,10 @@ class InsolvencyControllerTest {
         mockMvc.perform(delete(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("Insolvency DELETE request - MethodNotAllowed status code 405")
-    void callInsolvencyDeleteRequestMethodNotAllowed() throws Exception {
-        doThrow(new MethodNotAllowedException(String.format("Method Not Allowed - unsuccessful call to %s endpoint", URL)))
-                .when(insolvencyService).deleteInsolvency(anyString(), anyString());
-
-        mockMvc.perform(delete(URL)
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
-                .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
@@ -352,26 +289,10 @@ class InsolvencyControllerTest {
         mockMvc.perform(delete(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key")
                         .header("ERIC-Authorised-Key-Privileges", "internal-app"))
                 .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    @DisplayName("Insolvency DELETE request - ServiceUnavailable status code 503")
-    void callInsolvencyDeleteRequestServiceUnavailable() throws Exception {
-
-        doThrow(new ServiceUnavailableException("Service Unavailable - connection issues"))
-                .when(insolvencyService).deleteInsolvency(anyString(), anyString());
-
-        mockMvc.perform(delete(URL)
-                        .contentType(APPLICATION_JSON)
-                        .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
-                        .header("ERIC-Identity-Type", "key")
-                        .header("ERIC-Authorised-Key-Privileges", "internal-app"))
-                .andExpect(status().isServiceUnavailable());
     }
 
     @Test
@@ -384,7 +305,7 @@ class InsolvencyControllerTest {
         mockMvc.perform(get(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key"))
                 .andExpect(status().isOk());
     }
@@ -397,10 +318,10 @@ class InsolvencyControllerTest {
                 .when(insolvencyService).retrieveCompanyInsolvency(anyString());
 
         mockMvc.perform(get(URL)
-                .contentType(APPLICATION_JSON)
-                .header("x-request-id", "5342342")
-                .header("ERIC-Identity" , "SOME_IDENTITY")
-                .header("ERIC-Identity-Type", "oauth2"))
+                        .contentType(APPLICATION_JSON)
+                        .header("x-request-id", "5342342")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
+                        .header("ERIC-Identity-Type", "oauth2"))
                 .andExpect(status().isOk());
     }
 
@@ -413,7 +334,7 @@ class InsolvencyControllerTest {
         mockMvc.perform(get(URL)
                         .contentType(APPLICATION_JSON)
                         .header("x-request-id", "5342342")
-                        .header("ERIC-Identity" , "SOME_IDENTITY")
+                        .header("ERIC-Identity", "SOME_IDENTITY")
                         .header("ERIC-Identity-Type", "key"))
                 .andExpect(status().isNotFound());
     }
@@ -439,7 +360,7 @@ class InsolvencyControllerTest {
                         .header(ERIC_ALLOWED_ORIGIN, ERIC_ALLOWED_ORIGIN_VALUE)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
-                        .header(ORIGIN,ORIGIN_VALUE)
+                        .header(ORIGIN, ORIGIN_VALUE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -452,7 +373,7 @@ class InsolvencyControllerTest {
                         .header(ERIC_ALLOWED_ORIGIN, ERIC_ALLOWED_ORIGIN_VALUE)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
-                        .header(ORIGIN,ORIGIN_VALUE)
+                        .header(ORIGIN, ORIGIN_VALUE)
                         .content(gson.toJson(null)))
                 .andExpect(status().isForbidden());
     }
@@ -462,7 +383,7 @@ class InsolvencyControllerTest {
         mockMvc.perform(get(URL)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
-                        .header(ORIGIN,ORIGIN_VALUE)
+                        .header(ORIGIN, ORIGIN_VALUE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }

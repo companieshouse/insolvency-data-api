@@ -1,9 +1,12 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
+import static uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication.NAMESPACE;
+
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.GenerateEtagUtil;
 import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
@@ -11,30 +14,33 @@ import uk.gov.companieshouse.api.insolvency.InternalCompanyInsolvency;
 import uk.gov.companieshouse.api.insolvency.InternalData;
 import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
-import uk.gov.companieshouse.insolvency.data.exceptions.BadRequestException;
+import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
+import uk.gov.companieshouse.insolvency.data.exceptions.ConflictException;
 import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
-import uk.gov.companieshouse.insolvency.data.exceptions.ServiceUnavailableException;
+import uk.gov.companieshouse.insolvency.data.logging.DataMapHolder;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 
 @Service
 public class InsolvencyServiceImpl implements InsolvencyService {
 
-    private final Logger logger;
+    private static final Logger LOGGER = LoggerFactory.getLogger(NAMESPACE);
+    private static final String RECOVERABLE_MONGO_EX_MSG = "Recoverable MongoDB exception";
+    private static final String NONRECOVERABLE_MONGO_EX_MSG = "Failed to access MongoDB";
+
     private final InsolvencyRepository insolvencyRepository;
     private final InsolvencyApiService insolvencyApiService;
 
     /**
      * Insolvency service to store the insolvency data onto mongodb and call chs kafka endpoint.
      *
-     * @param logger               the logger
      * @param insolvencyRepository mongodb repository
      * @param insolvencyApiService chs-kafka api service
      */
-    public InsolvencyServiceImpl(Logger logger, InsolvencyRepository insolvencyRepository,
+    public InsolvencyServiceImpl(InsolvencyRepository insolvencyRepository,
             InsolvencyApiService insolvencyApiService) {
-        this.logger = logger;
         this.insolvencyRepository = insolvencyRepository;
         this.insolvencyApiService = insolvencyApiService;
     }
@@ -50,48 +56,57 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                     .ifPresent(existingDocument -> {
                                 if (existingDocument.getDeltaAt() != null
                                         && dateFromBodyRequest.isBefore(existingDocument.getDeltaAt())) {
-                                    logger.info("Insolvency not persisted as the record provided is older"
-                                            + " than the one already stored.");
-                                    throw new IllegalArgumentException("Stale delta at");
+                                    LOGGER.error("Insolvency not persisted - stale delta at",
+                                            DataMapHolder.getLogMap());
+                                    throw new ConflictException("Insolvency not persisted - stale delta at");
                                 }
                             }
                     );
 
             InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
                     companyNumber, companyInsolvency);
+            LOGGER.info("Successfully mapped insolvency document", DataMapHolder.getLogMap());
 
             insolvencyDocument.setDeltaAt(dateFromBodyRequest);
             insolvencyDocument.setUpdatedAt(LocalDateTime.now());
 
             insolvencyRepository.save(insolvencyDocument);
-            logger.info(String.format(
-                    "Company insolvency successfully upserted in MongoDB with context id %s and company number %s",
-                    contextId,
-                    companyNumber));
+            LOGGER.info("Company insolvency successfully persisted in MongoDB", DataMapHolder.getLogMap());
 
             insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
                     EventType.CHANGED);
-            logger.info(String.format(
-                    "ChsKafka api CHANGED invoked successfully for context id %s and company number %s",
-                    contextId,
-                    companyNumber));
+            LOGGER.info("ChsKafka api CHANGED invoked successfully", DataMapHolder.getLogMap());
 
-        } catch (IllegalArgumentException illegalArgumentEx) {
-            throw new BadRequestException(illegalArgumentEx.getMessage());
-        } catch (DataAccessException dbException) {
-            throw new ServiceUnavailableException(dbException.getMessage());
+        } catch (TransientDataAccessException ex) {
+            LOGGER.info(RECOVERABLE_MONGO_EX_MSG, DataMapHolder.getLogMap());
+            throw new BadGatewayException(RECOVERABLE_MONGO_EX_MSG, ex);
+        } catch (DataAccessException ex) {
+            LOGGER.error(NONRECOVERABLE_MONGO_EX_MSG, DataMapHolder.getLogMap());
+            throw new BadGatewayException(NONRECOVERABLE_MONGO_EX_MSG, ex);
         }
     }
 
     @Override
     public CompanyInsolvency retrieveCompanyInsolvency(String companyNumber) {
-        Optional<InsolvencyDocument> insolvencyDocumentOptional =
-                insolvencyRepository.findById(companyNumber);
+        Optional<InsolvencyDocument> insolvencyDocumentOptional;
+        try {
+            insolvencyDocumentOptional =
+                    insolvencyRepository.findById(companyNumber);
+        } catch (TransientDataAccessException ex) {
+            LOGGER.info(RECOVERABLE_MONGO_EX_MSG, DataMapHolder.getLogMap());
+            throw new BadGatewayException(RECOVERABLE_MONGO_EX_MSG, ex);
+        } catch (DataAccessException ex) {
+            LOGGER.error(NONRECOVERABLE_MONGO_EX_MSG, DataMapHolder.getLogMap());
+            throw new BadGatewayException(NONRECOVERABLE_MONGO_EX_MSG, ex);
+        }
 
-        InsolvencyDocument insolvencyDocument = insolvencyDocumentOptional.orElseThrow(
-                () -> new DocumentNotFoundException(String.format(
-                        "Resource not found for company number: %s", companyNumber)));
+        InsolvencyDocument insolvencyDocument = insolvencyDocumentOptional.orElseGet(
+                () -> {
+                    LOGGER.info("Insolvency document not found", DataMapHolder.getLogMap());
+                    throw new DocumentNotFoundException("Insolvency document not found");
+                });
 
+        LOGGER.info("Successfully retrieved insolvency document", DataMapHolder.getLogMap());
         return insolvencyDocument.getCompanyInsolvency();
     }
 
@@ -102,26 +117,22 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                     insolvencyRepository.findById(companyNumber);
 
             if (insolvencyDocumentOptional.isEmpty()) {
-                throw new DocumentNotFoundException(String.format(
-                        "Company insolvency doesn't exist for company number %s",
-                        companyNumber));
+                LOGGER.info("Company insolvency doesn't exist", DataMapHolder.getLogMap());
+                throw new DocumentNotFoundException("Company insolvency doesn't exist");
             }
 
             insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocumentOptional.get(),
                     EventType.DELETED);
-            logger.info(String.format("ChsKafka api DELETED "
-                            + "invoked successfully for context id %s and company number %s",
-                    contextId,
-                    companyNumber));
+            LOGGER.info("CHS Kafka API DELETED invoked successfully", DataMapHolder.getLogMap());
 
             insolvencyRepository.deleteById(companyNumber);
-            logger.info(String.format(
-                    "Company insolvency is deleted in "
-                            + "MongoDB with context id %s and company number %s",
-                    contextId,
-                    companyNumber));
-        } catch (DataAccessException dbException) {
-            throw new ServiceUnavailableException(dbException.getMessage());
+            LOGGER.info("Company insolvency deleted successfully");
+        } catch (TransientDataAccessException ex) {
+            LOGGER.info(RECOVERABLE_MONGO_EX_MSG, DataMapHolder.getLogMap());
+            throw new BadGatewayException(RECOVERABLE_MONGO_EX_MSG, ex);
+        } catch (DataAccessException ex) {
+            LOGGER.error(NONRECOVERABLE_MONGO_EX_MSG, DataMapHolder.getLogMap());
+            throw new BadGatewayException(NONRECOVERABLE_MONGO_EX_MSG, ex);
         }
     }
 

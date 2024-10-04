@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.insolvency.data.converter;
 
+import static uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication.NAMESPACE;
+
 import java.util.Set;
 
 import org.springframework.core.convert.TypeDescriptor;
@@ -7,8 +9,14 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.lang.NonNull;
+import uk.gov.companieshouse.insolvency.data.exceptions.InternalServerErrorException;
+import uk.gov.companieshouse.insolvency.data.logging.DataMapHolder;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 
 public class EnumConverters {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NAMESPACE);
 
     private EnumConverters() {
 
@@ -27,7 +35,9 @@ public class EnumConverters {
             try {
                 return targetType.getType().getDeclaredMethod("fromValue", String.class).invoke(null, source);
             } catch (Exception ex) {
-                throw new IllegalArgumentException("Unexpected Enum " + targetType);
+                final String msg = "Unexpected Enum: %s".formatted(targetType);
+                LOGGER.info(msg, DataMapHolder.getLogMap());
+                throw new InternalServerErrorException(msg, ex);
             }
         }
     }
@@ -46,6 +56,7 @@ public class EnumConverters {
                 return sourceType.getType().getDeclaredMethod("getValue", null)
                         .invoke(source, null);
             } catch (Exception ex) {
+                LOGGER.info("Exception in EnumConverter during write conversion", DataMapHolder.getLogMap());
                 return ((Enum<?>) source).name();
             }
         }
