@@ -57,7 +57,6 @@ public class InsolvencyApiService {
             LOGGER.info("Calling CHS Kafka API", DataMapHolder.getLogMap());
             return changedResourcePost.execute();
         } catch (ApiErrorResponseException ex) {
-            DataMapHolder.get().status(Integer.toString(ex.getStatusCode()));
             final String msg = "Resource changed call failed and responded with: %d".formatted(ex.getStatusCode());
             LOGGER.info(msg, DataMapHolder.getLogMap());
             throw new BadGatewayException(msg, ex);
