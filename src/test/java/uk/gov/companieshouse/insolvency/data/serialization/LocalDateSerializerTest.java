@@ -1,17 +1,16 @@
 package uk.gov.companieshouse.insolvency.data.serialization;
 
+import static org.mockito.Mockito.verify;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.insolvency.data.util.DateTimeFormatter;
-
-import java.io.IOException;
-
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class LocalDateSerializerTest {

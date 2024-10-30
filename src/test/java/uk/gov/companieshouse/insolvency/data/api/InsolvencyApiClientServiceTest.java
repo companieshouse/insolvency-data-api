@@ -62,8 +62,7 @@ class InsolvencyApiClientServiceTest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
-                getInsolvencyDocument(), EventType.CHANGED);
+        ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi(getInsolvencyDocument(), EventType.CHANGED);
 
         Assertions.assertThat(apiResponse).isNotNull();
 
@@ -84,8 +83,7 @@ class InsolvencyApiClientServiceTest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
-                getInsolvencyDocument(), EventType.DELETED);
+        ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi(getInsolvencyDocument(), EventType.DELETED);
 
         Assertions.assertThat(apiResponse).isNotNull();
 
@@ -106,8 +104,8 @@ class InsolvencyApiClientServiceTest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> insolvencyApiService.invokeChsKafkaApi
-                ("3245435", getInsolvencyDocument(), EventType.CHANGED));
+        assertThrows(RuntimeException.class,
+                () -> insolvencyApiService.invokeChsKafkaApi(getInsolvencyDocument(), EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
@@ -133,8 +131,7 @@ class InsolvencyApiClientServiceTest {
         when(changedResourcePost.execute()).thenThrow(apiErrorResponseException);
 
         assertThrows(exception,
-                () -> insolvencyApiService.invokeChsKafkaApi
-                        ("3245435", getInsolvencyDocument(), EventType.CHANGED));
+                () -> insolvencyApiService.invokeChsKafkaApi(getInsolvencyDocument(), EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();

@@ -44,6 +44,7 @@ import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 @ExtendWith(MockitoExtension.class)
 class InsolvencyServiceImplTest {
 
+    private static final String DELTA_AT = "20211008152823383176";
     @Mock
     private InsolvencyRepository repository;
     @Mock
@@ -101,7 +102,7 @@ class InsolvencyServiceImplTest {
         // then
         assertNull(existingDocument.getDeltaAt());
         verify(repository, Mockito.times(1)).save(Mockito.any());
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), any(), eq(EventType.CHANGED));
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(any(), eq(EventType.CHANGED));
     }
 
     @Test
@@ -113,8 +114,7 @@ class InsolvencyServiceImplTest {
         underTest.processInsolvency(contextId, companyNumber, companyInsolvency);
 
         verify(repository, Mockito.times(1)).save(Mockito.any());
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(eq(contextId), any(),
-                eq(EventType.CHANGED));
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(any(), eq(EventType.CHANGED));
     }
 
     @Test
@@ -181,7 +181,7 @@ class InsolvencyServiceImplTest {
                 .findById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("436534543", "CH363453"));
+                underTest.deleteInsolvency("CH363453", DELTA_AT));
         verifyNoInteractions(insolvencyApiService);
     }
 
@@ -193,7 +193,7 @@ class InsolvencyServiceImplTest {
                 .findById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("436534543", "CH363453"));
+                underTest.deleteInsolvency("CH363453", DELTA_AT));
         verifyNoInteractions(insolvencyApiService);
     }
 
@@ -206,7 +206,7 @@ class InsolvencyServiceImplTest {
                 .deleteById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("436534543", "CH363453"));
+                underTest.deleteInsolvency("CH363453", DELTA_AT));
     }
 
     @Test
@@ -218,7 +218,7 @@ class InsolvencyServiceImplTest {
                 .deleteById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("436534543", "CH363453"));
+                underTest.deleteInsolvency("CH363453", DELTA_AT));
     }
 
     @Test
@@ -264,7 +264,7 @@ class InsolvencyServiceImplTest {
                 ("CH4000056"));
 
         verify(repository, Mockito.times(1)).findById(Mockito.any());
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), any());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(any(), any());
     }
 
     @Test
@@ -273,25 +273,24 @@ class InsolvencyServiceImplTest {
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.empty());
 
         Assert.assertThrows(DocumentNotFoundException.class, () ->
-                underTest.deleteInsolvency(companyNumber, companyNumber));
+                underTest.deleteInsolvency(companyNumber, DELTA_AT));
 
         verify(repository, Mockito.times(0)).deleteById(Mockito.any());
         verify(repository, Mockito.times(1)).findById(companyNumber);
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), any());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(any(), any());
     }
 
     @Test
     void when_company_number_exist_then_finishes_successfully() {
         String companyNumber = "CH363453";
-        String contextId = "1234";
         InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(),
                 OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
         Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
 
-        underTest.deleteInsolvency(contextId, companyNumber);
+        underTest.deleteInsolvency(companyNumber, DELTA_AT);
         verify(repository, Mockito.times(1)).deleteById(Mockito.any());
         verify(repository, Mockito.times(1)).findById(companyNumber);
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(contextId, document, EventType.DELETED);
+        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(document, EventType.DELETED);
     }
 
     @Test
@@ -304,7 +303,7 @@ class InsolvencyServiceImplTest {
                 .deleteById(companyNumber);
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("436534543", companyNumber));
+                underTest.deleteInsolvency(companyNumber, DELTA_AT));
     }
 
     @Test
@@ -316,7 +315,7 @@ class InsolvencyServiceImplTest {
                 .findById(companyNumber);
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("436534543", companyNumber));
+                underTest.deleteInsolvency(companyNumber, DELTA_AT));
     }
 
     private InternalCompanyInsolvency createInternalCompanyInsolvency() {

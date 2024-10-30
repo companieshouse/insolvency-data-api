@@ -43,17 +43,12 @@ public class InsolvencyApiService {
      * @param insolvencyDocument company insolvency document
      * @return response returned from chs-kafka api
      */
-    public ApiResponse<Void> invokeChsKafkaApi(String contextId,
-            InsolvencyDocument insolvencyDocument,
-            EventType eventType) {
+    public ApiResponse<Void> invokeChsKafkaApi(InsolvencyDocument insolvencyDocument, EventType eventType) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
-        internalApiClient.getHttpClient().setRequestId(contextId);
+        internalApiClient.getHttpClient().setRequestId(DataMapHolder.getRequestId());
         internalApiClient.setBasePath(chsKafkaUrl);
-        PrivateChangedResourcePost changedResourcePost =
-                internalApiClient.privateChangedResourceHandler().postChangedResource(
-                        CHANGED_RESOURCE_URI, mapChangedResource(
-                                contextId, insolvencyDocument, eventType)
-                );
+        PrivateChangedResourcePost changedResourcePost = internalApiClient.privateChangedResourceHandler()
+                .postChangedResource(CHANGED_RESOURCE_URI, mapChangedResource(insolvencyDocument, eventType));
         try {
             LOGGER.info("Calling CHS Kafka API", DataMapHolder.getLogMap());
             return changedResourcePost.execute();
@@ -64,9 +59,7 @@ public class InsolvencyApiService {
         }
     }
 
-    private ChangedResource mapChangedResource(String contextId,
-            InsolvencyDocument insolvencyDocument,
-            EventType eventType) {
+    private ChangedResource mapChangedResource(InsolvencyDocument insolvencyDocument, EventType eventType) {
         String resourceUri = "/company/" + insolvencyDocument.getId() + "/insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
@@ -77,7 +70,7 @@ public class InsolvencyApiService {
         changedResource.setResourceUri(resourceUri);
         changedResource.event(event);
         changedResource.setResourceKind("company-insolvency");
-        changedResource.setContextId(contextId);
+        changedResource.setContextId(DataMapHolder.getRequestId());
 
         if (EventType.DELETED.equals(eventType)) {
             changedResource.setDeletedData(insolvencyDocument.getCompanyInsolvency());

@@ -217,6 +217,7 @@ public class InsolvencySteps {
         HttpHeaders headers = new HttpHeaders();
         this.contextId = "5234234234";
         headers.set("x-request-id", "5234234234");
+        headers.set("X-DELTA-AT", "20241010175532456123");
         headers.set("ERIC-Identity", "SOME_IDENTITY");
         headers.set("ERIC-Identity-Type", "key");
         headers.set("ERIC-Authorised-Key-Privileges", "internal-app");

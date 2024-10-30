@@ -60,8 +60,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                                             DataMapHolder.getLogMap());
                                     throw new ConflictException("Insolvency not persisted - stale delta at");
                                 }
-                            }
-                    );
+                            });
 
             InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
                     companyNumber, companyInsolvency);
@@ -73,8 +72,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             insolvencyRepository.save(insolvencyDocument);
             LOGGER.info("Company insolvency successfully persisted in MongoDB", DataMapHolder.getLogMap());
 
-            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
-                    EventType.CHANGED);
+            insolvencyApiService.invokeChsKafkaApi(insolvencyDocument, EventType.CHANGED);
             LOGGER.info("ChsKafka api CHANGED invoked successfully", DataMapHolder.getLogMap());
 
         } catch (TransientDataAccessException ex) {
@@ -111,7 +109,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     }
 
     @Override
-    public void deleteInsolvency(String contextId, String companyNumber) {
+    public void deleteInsolvency(String companyNumber, String deltaAt) {
         try {
             Optional<InsolvencyDocument> insolvencyDocumentOptional =
                     insolvencyRepository.findById(companyNumber);
@@ -121,8 +119,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
                 throw new DocumentNotFoundException("Company insolvency doesn't exist");
             }
 
-            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocumentOptional.get(),
-                    EventType.DELETED);
+            insolvencyApiService.invokeChsKafkaApi(insolvencyDocumentOptional.get(), EventType.DELETED);
             LOGGER.info("CHS Kafka API DELETED invoked successfully", DataMapHolder.getLogMap());
 
             insolvencyRepository.deleteById(companyNumber);

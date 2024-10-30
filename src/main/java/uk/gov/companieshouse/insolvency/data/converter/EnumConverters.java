@@ -3,7 +3,6 @@ package uk.gov.companieshouse.insolvency.data.converter;
 import static uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication.NAMESPACE;
 
 import java.util.Set;
-
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.data.convert.ReadingConverter;
