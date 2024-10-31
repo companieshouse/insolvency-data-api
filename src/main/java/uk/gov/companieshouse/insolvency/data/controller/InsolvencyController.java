@@ -50,7 +50,7 @@ public class InsolvencyController {
     ) {
         DataMapHolder.get().companyNumber(companyNumber);
         LOGGER.info("Payload successfully received for PUT request", DataMapHolder.getLogMap());
-        insolvencyService.processInsolvency(contextId, companyNumber, requestBody);
+        insolvencyService.processInsolvency(companyNumber, requestBody);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }

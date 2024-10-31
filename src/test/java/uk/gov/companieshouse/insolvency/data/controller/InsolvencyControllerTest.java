@@ -83,8 +83,7 @@ class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
-                isA(InternalCompanyInsolvency.class));
+        doNothing().when(insolvencyService).processInsolvency(anyString(), isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
@@ -103,8 +102,7 @@ class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
-                isA(InternalCompanyInsolvency.class));
+        doNothing().when(insolvencyService).processInsolvency(anyString(), isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
@@ -122,8 +120,7 @@ class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
-                isA(InternalCompanyInsolvency.class));
+        doNothing().when(insolvencyService).processInsolvency(anyString(), isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
@@ -142,8 +139,7 @@ class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
-                isA(InternalCompanyInsolvency.class));
+        doNothing().when(insolvencyService).processInsolvency(anyString(), isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
@@ -161,8 +157,7 @@ class InsolvencyControllerTest {
         request.setInternalData(new InternalData());
         request.setExternalData(new CompanyInsolvency());
 
-        doNothing().when(insolvencyService).processInsolvency(anyString(), anyString(),
-                isA(InternalCompanyInsolvency.class));
+        doNothing().when(insolvencyService).processInsolvency(anyString(), isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
@@ -182,8 +177,7 @@ class InsolvencyControllerTest {
         request.setExternalData(new CompanyInsolvency());
 
         doThrow(new BadRequestException("Bad request - data in wrong format"))
-                .when(insolvencyService).processInsolvency(anyString(), anyString(),
-                        isA(InternalCompanyInsolvency.class));
+                .when(insolvencyService).processInsolvency(anyString(), isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
@@ -203,8 +197,7 @@ class InsolvencyControllerTest {
         request.setExternalData(new CompanyInsolvency());
 
         doThrow(new InternalServerErrorException("Internal Server Error - unexpected error"))
-                .when(insolvencyService).processInsolvency(anyString(), anyString(),
-                        isA(InternalCompanyInsolvency.class));
+                .when(insolvencyService).processInsolvency(anyString(), isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)
@@ -224,8 +217,7 @@ class InsolvencyControllerTest {
         request.setExternalData(new CompanyInsolvency());
 
         doThrow(new ConflictException("Stale delta at"))
-                .when(insolvencyService).processInsolvency(anyString(), anyString(),
-                        isA(InternalCompanyInsolvency.class));
+                .when(insolvencyService).processInsolvency(anyString(), isA(InternalCompanyInsolvency.class));
 
         mockMvc.perform(put(URL)
                         .contentType(APPLICATION_JSON)

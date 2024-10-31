@@ -2,14 +2,15 @@ package uk.gov.companieshouse.insolvency.data.service;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -25,7 +26,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -37,14 +37,17 @@ import uk.gov.companieshouse.insolvency.data.api.InsolvencyApiService;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
 import uk.gov.companieshouse.insolvency.data.exceptions.ConflictException;
-import uk.gov.companieshouse.insolvency.data.exceptions.DocumentNotFoundException;
 import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 
 @ExtendWith(MockitoExtension.class)
 class InsolvencyServiceImplTest {
 
-    private static final String DELTA_AT = "20211008152823383176";
+    private static final String DELTA_AT = "20221008152823383176";
+    private static final String STALE_DELTA_AT = "20201008152823383176";
+    private static final OffsetDateTime DB_DELTA_AT = OffsetDateTime.of(2021, 10, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+    private static final String COMPANY_NUMBER = "12345678";
+
     @Mock
     private InsolvencyRepository repository;
     @Mock
@@ -61,9 +64,6 @@ class InsolvencyServiceImplTest {
     void when_request_is_stale_then_data_should_not_be_saved(OffsetDateTime requestDeltaAt,
             OffsetDateTime existingDeltaAt) {
         // given
-        final String companyNumber = "CN123456";
-        final String contextId = "context_id";
-
         InternalCompanyInsolvency internalCompanyInsolvency = createInternalCompanyInsolvency();
         internalCompanyInsolvency.getInternalData().setDeltaAt(requestDeltaAt);
 
@@ -74,7 +74,7 @@ class InsolvencyServiceImplTest {
         when(repository.findById(anyString())).thenReturn(existingDocumentOptional);
 
         // when
-        Executable executable = () -> underTest.processInsolvency(contextId, companyNumber, internalCompanyInsolvency);
+        Executable executable = () -> underTest.processInsolvency(COMPANY_NUMBER, internalCompanyInsolvency);
 
         // then
         assertThrows(ConflictException.class, executable);
@@ -85,9 +85,6 @@ class InsolvencyServiceImplTest {
     @Test
     void should_process_successfully_when_existing_delta_at_is_null() {
         // given
-        final String companyNumber = "CN123456";
-        final String contextId = "context_id";
-
         OffsetDateTime requestDeltaAt = OffsetDateTime.parse("2021-03-08T12:00:00.000Z");
 
         InternalCompanyInsolvency internalCompanyInsolvency = createInternalCompanyInsolvency();
@@ -97,24 +94,22 @@ class InsolvencyServiceImplTest {
         when(repository.findById(anyString())).thenReturn(Optional.of(existingDocument));
 
         // when
-        underTest.processInsolvency(contextId, companyNumber, internalCompanyInsolvency);
+        underTest.processInsolvency(COMPANY_NUMBER, internalCompanyInsolvency);
 
         // then
         assertNull(existingDocument.getDeltaAt());
-        verify(repository, Mockito.times(1)).save(Mockito.any());
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(any(), eq(EventType.CHANGED));
+        verify(repository).save(any());
+        verify(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), eq(EventType.CHANGED));
     }
 
     @Test
     void when_insolvency_data_is_given_then_data_should_be_saved() {
         InternalCompanyInsolvency companyInsolvency = createInternalCompanyInsolvency();
-        String contextId = "436534543";
-        String companyNumber = "CH363453";
 
-        underTest.processInsolvency(contextId, companyNumber, companyInsolvency);
+        underTest.processInsolvency(COMPANY_NUMBER, companyInsolvency);
 
-        verify(repository, Mockito.times(1)).save(Mockito.any());
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(any(), eq(EventType.CHANGED));
+        verify(repository).save(any());
+        verify(insolvencyApiService).invokeChsKafkaApi(anyString(), any(), eq(EventType.CHANGED));
     }
 
     @Test
@@ -127,7 +122,7 @@ class InsolvencyServiceImplTest {
                 .findById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
+                underTest.processInsolvency(COMPANY_NUMBER, companyInsolvency));
         verifyNoInteractions(insolvencyApiService);
     }
 
@@ -141,7 +136,7 @@ class InsolvencyServiceImplTest {
                 .findById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
+                underTest.processInsolvency(COMPANY_NUMBER, companyInsolvency));
         verifyNoInteractions(insolvencyApiService);
     }
 
@@ -155,7 +150,7 @@ class InsolvencyServiceImplTest {
                 .save(isA(InsolvencyDocument.class));
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
+                underTest.processInsolvency(COMPANY_NUMBER, companyInsolvency));
         verifyNoInteractions(insolvencyApiService);
     }
 
@@ -169,7 +164,7 @@ class InsolvencyServiceImplTest {
                 .save(isA(InsolvencyDocument.class));
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.processInsolvency("436534543", "CH363453", companyInsolvency));
+                underTest.processInsolvency(COMPANY_NUMBER, companyInsolvency));
         verifyNoInteractions(insolvencyApiService);
     }
 
@@ -181,7 +176,7 @@ class InsolvencyServiceImplTest {
                 .findById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("CH363453", DELTA_AT));
+                underTest.deleteInsolvency(COMPANY_NUMBER, DELTA_AT));
         verifyNoInteractions(insolvencyApiService);
     }
 
@@ -193,7 +188,7 @@ class InsolvencyServiceImplTest {
                 .findById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("CH363453", DELTA_AT));
+                underTest.deleteInsolvency(COMPANY_NUMBER, DELTA_AT));
         verifyNoInteractions(insolvencyApiService);
     }
 
@@ -206,7 +201,7 @@ class InsolvencyServiceImplTest {
                 .deleteById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("CH363453", DELTA_AT));
+                underTest.deleteInsolvency(COMPANY_NUMBER, DELTA_AT));
     }
 
     @Test
@@ -218,21 +213,19 @@ class InsolvencyServiceImplTest {
                 .deleteById(anyString());
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency("CH363453", DELTA_AT));
+                underTest.deleteInsolvency(COMPANY_NUMBER, DELTA_AT));
     }
 
     @Test
     void when_insolvency_number_is_given_then_return_company_insolvency_information() {
-        String companyNumber = "234234";
-
-        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(),
+        InsolvencyDocument document = new InsolvencyDocument(COMPANY_NUMBER, new CompanyInsolvency(),
                 OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
-        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
+        when(repository.findById(COMPANY_NUMBER)).thenReturn(Optional.of(document));
 
-        CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency(companyNumber);
+        CompanyInsolvency companyInsolvency = underTest.retrieveCompanyInsolvency(COMPANY_NUMBER);
 
         Assertions.assertThat(companyInsolvency).isNotNull();
-        verify(repository, Mockito.times(1)).findById(Mockito.any());
+        verify(repository).findById(any());
 
     }
 
@@ -260,62 +253,71 @@ class InsolvencyServiceImplTest {
 
     @Test
     void when_invalid_insolvency_number_is_given_then_throw_exception() {
-        Assert.assertThrows(RuntimeException.class, () -> underTest.retrieveCompanyInsolvency
-                ("CH4000056"));
+        Assert.assertThrows(RuntimeException.class, () -> underTest.retrieveCompanyInsolvency(COMPANY_NUMBER));
 
-        verify(repository, Mockito.times(1)).findById(Mockito.any());
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(any(), any());
+        verify(repository).findById(any());
+        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), any());
     }
 
     @Test
-    void when_company_number_doesnt_exist_then_throws_DocumentNotFoundException_error() {
-        String companyNumber = "CH363453";
-        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.empty());
+    void shouldInvokeChsKafkaApiWithEmptyDataWhenDocumentDoesNotExistDuringDelete() {
+        when(repository.findById(COMPANY_NUMBER)).thenReturn(Optional.empty());
 
-        Assert.assertThrows(DocumentNotFoundException.class, () ->
-                underTest.deleteInsolvency(companyNumber, DELTA_AT));
+        underTest.deleteInsolvency(COMPANY_NUMBER, DELTA_AT);
 
-        verify(repository, Mockito.times(0)).deleteById(Mockito.any());
-        verify(repository, Mockito.times(1)).findById(companyNumber);
-        verify(insolvencyApiService, times(0)).invokeChsKafkaApi(any(), any());
+        verify(repository).findById(COMPANY_NUMBER);
+        verifyNoMoreInteractions(repository);
+        verify(insolvencyApiService).invokeChsKafkaApi(COMPANY_NUMBER, null, EventType.DELETED);
     }
 
     @Test
     void when_company_number_exist_then_finishes_successfully() {
-        String companyNumber = "CH363453";
-        InsolvencyDocument document = new InsolvencyDocument(companyNumber, new CompanyInsolvency(),
+        CompanyInsolvency data = new CompanyInsolvency();
+        InsolvencyDocument document = new InsolvencyDocument(COMPANY_NUMBER, data,
                 OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
-        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(document));
+        document.setDeltaAt(DB_DELTA_AT);
+        when(repository.findById(COMPANY_NUMBER)).thenReturn(Optional.of(document));
 
-        underTest.deleteInsolvency(companyNumber, DELTA_AT);
-        verify(repository, Mockito.times(1)).deleteById(Mockito.any());
-        verify(repository, Mockito.times(1)).findById(companyNumber);
-        verify(insolvencyApiService, times(1)).invokeChsKafkaApi(document, EventType.DELETED);
+        underTest.deleteInsolvency(COMPANY_NUMBER, DELTA_AT);
+        verify(repository).findById(COMPANY_NUMBER);
+        verify(repository).deleteById(COMPANY_NUMBER);
+        verify(insolvencyApiService).invokeChsKafkaApi(COMPANY_NUMBER, data, EventType.DELETED);
+    }
+
+    @Test
+    void shouldThrowConflictExceptionWhenDocumentExistsAndRequestDeltaAtIsStale() {
+        CompanyInsolvency data = new CompanyInsolvency();
+        InsolvencyDocument document = new InsolvencyDocument(COMPANY_NUMBER, data,
+                OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC), LocalDateTime.now(), "123");
+        document.setDeltaAt(DB_DELTA_AT);
+        when(repository.findById(COMPANY_NUMBER)).thenReturn(Optional.of(document));
+
+        assertThrows(ConflictException.class, () ->
+                underTest.deleteInsolvency(COMPANY_NUMBER, STALE_DELTA_AT));
+        verify(repository).findById(COMPANY_NUMBER);
+        verifyNoMoreInteractions(repository);
+        verifyNoInteractions(insolvencyApiService);
     }
 
     @Test
     void when_connection_issue_in_db_on_delete_then_throw_bad_gateway_exception() {
-        String companyNumber = "CH363453";
-
-        Mockito.when(repository.findById(companyNumber)).thenReturn(Optional.of(new InsolvencyDocument()));
+        when(repository.findById(COMPANY_NUMBER)).thenReturn(Optional.of(new InsolvencyDocument()));
         doThrow(new DataAccessResourceFailureException("Connection broken"))
                 .when(repository)
-                .deleteById(companyNumber);
+                .deleteById(COMPANY_NUMBER);
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency(companyNumber, DELTA_AT));
+                underTest.deleteInsolvency(COMPANY_NUMBER, DELTA_AT));
     }
 
     @Test
     void when_connection_issue_in_db_on_find_in_delete_then_throw_bad_gateway_exception() {
-        String companyNumber = "CH363453";
-
         doThrow(new DataAccessResourceFailureException("Connection broken"))
                 .when(repository)
-                .findById(companyNumber);
+                .findById(COMPANY_NUMBER);
 
         assertThrows(BadGatewayException.class, () ->
-                underTest.deleteInsolvency(companyNumber, DELTA_AT));
+                underTest.deleteInsolvency(COMPANY_NUMBER, DELTA_AT));
     }
 
     private InternalCompanyInsolvency createInternalCompanyInsolvency() {

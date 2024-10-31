@@ -1,7 +1,10 @@
 package uk.gov.companieshouse.insolvency.data.util;
 
+import static java.time.ZoneOffset.UTC;
+
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +22,8 @@ public class DateTimeFormatter {
 
     static java.time.format.DateTimeFormatter publishedAtDateTimeFormatter =
             java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private static final java.time.format.DateTimeFormatter deltaAtFormatter =
+            java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSSSS").withZone(UTC);
 
     private DateTimeFormatter() {
 
@@ -26,6 +31,7 @@ public class DateTimeFormatter {
 
     /**
      * Parse date string to LocalDate.
+     *
      * @param dateStr date as string.
      * @return parsed date.
      */
@@ -37,6 +43,7 @@ public class DateTimeFormatter {
 
     /**
      * Format date.
+     *
      * @param localDate date to format.
      * @return formatted date as string.
      */
@@ -46,6 +53,7 @@ public class DateTimeFormatter {
 
     /**
      * Format publishedAt date
+     *
      * @param now current time as Instant
      * @return UTC time as string rounded to seconds
      */
@@ -53,4 +61,8 @@ public class DateTimeFormatter {
         return publishedAtDateTimeFormatter.format(now.atZone(ZoneOffset.UTC));
     }
 
+    public static boolean isDeltaStale(final String requestDeltaAt, final OffsetDateTime existingDeltaAt) {
+        return existingDeltaAt != null &&
+                OffsetDateTime.parse(requestDeltaAt, deltaAtFormatter).isBefore(existingDeltaAt);
+    }
 }

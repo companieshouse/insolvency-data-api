@@ -7,7 +7,7 @@ Feature: Process company insolvency information
     When I send PUT request with payload "<data>" file
     Then I should receive 200 status code
     And the expected result should match "<result>" file
-    And the CHS Kafka API is invoked successfully with event "changed"
+    And the CHS Kafka API is invoked with event "changed"
 
     Examples:
       | data                             | result                                  |
@@ -22,7 +22,7 @@ Feature: Process company insolvency information
     When I send PUT request with payload "<data>" file
     Then I should receive 200 status code
     And the expected result should match "<result>" file
-    And the CHS Kafka API is invoked successfully with event "changed"
+    And the CHS Kafka API is invoked with event "changed"
 
     Examples:
       | companyNumber  | data                                       | result                                            |
