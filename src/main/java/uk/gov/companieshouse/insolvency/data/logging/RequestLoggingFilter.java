@@ -2,7 +2,7 @@ package uk.gov.companieshouse.insolvency.data.logging;
 
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
-import static org.springframework.data.domain.jaxb.SpringDataJaxb.NAMESPACE;
+import static uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication.NAMESPACE;
 import static uk.gov.companieshouse.logging.util.LogContextProperties.REQUEST_ID;
 
 import jakarta.annotation.Nonnull;
