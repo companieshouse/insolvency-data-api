@@ -10,11 +10,11 @@ import uk.gov.companieshouse.api.chskafka.ChangedResource;
 import uk.gov.companieshouse.api.chskafka.ChangedResourceEvent;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
+import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
 import uk.gov.companieshouse.insolvency.data.logging.DataMapHolder;
-import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 import uk.gov.companieshouse.insolvency.data.util.DateTimeFormatter;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -40,20 +40,17 @@ public class InsolvencyApiService {
     /**
      * Call chs-kafka api.
      *
-     * @param insolvencyDocument company insolvency document
+     * @param companyInsolvency company insolvency document
      * @return response returned from chs-kafka api
      */
-    public ApiResponse<Void> invokeChsKafkaApi(String contextId,
-            InsolvencyDocument insolvencyDocument,
+    public ApiResponse<Void> invokeChsKafkaApi(String companyNumber, CompanyInsolvency companyInsolvency,
             EventType eventType) {
         InternalApiClient internalApiClient = apiClientService.getInternalApiClient();
-        internalApiClient.getHttpClient().setRequestId(contextId);
+        internalApiClient.getHttpClient().setRequestId(DataMapHolder.getRequestId());
         internalApiClient.setBasePath(chsKafkaUrl);
-        PrivateChangedResourcePost changedResourcePost =
-                internalApiClient.privateChangedResourceHandler().postChangedResource(
-                        CHANGED_RESOURCE_URI, mapChangedResource(
-                                contextId, insolvencyDocument, eventType)
-                );
+        PrivateChangedResourcePost changedResourcePost = internalApiClient.privateChangedResourceHandler()
+                .postChangedResource(CHANGED_RESOURCE_URI,
+                        mapChangedResource(companyNumber, companyInsolvency, eventType));
         try {
             LOGGER.info("Calling CHS Kafka API", DataMapHolder.getLogMap());
             return changedResourcePost.execute();
@@ -64,10 +61,9 @@ public class InsolvencyApiService {
         }
     }
 
-    private ChangedResource mapChangedResource(String contextId,
-            InsolvencyDocument insolvencyDocument,
+    private ChangedResource mapChangedResource(String companyNumber, CompanyInsolvency insolvencyData,
             EventType eventType) {
-        String resourceUri = "/company/" + insolvencyDocument.getId() + "/insolvency";
+        String resourceUri = "/company/" + companyNumber + "/insolvency";
 
         ChangedResourceEvent event = new ChangedResourceEvent();
         event.setType(eventType.getEvent());
@@ -77,14 +73,13 @@ public class InsolvencyApiService {
         changedResource.setResourceUri(resourceUri);
         changedResource.event(event);
         changedResource.setResourceKind("company-insolvency");
-        changedResource.setContextId(contextId);
+        changedResource.setContextId(DataMapHolder.getRequestId());
 
         if (EventType.DELETED.equals(eventType)) {
-            changedResource.setDeletedData(insolvencyDocument.getCompanyInsolvency());
+            changedResource.setDeletedData(insolvencyData);
         }
 
         LOGGER.info("Successfully mapped ChangedResource object", DataMapHolder.getLogMap());
         return changedResource;
     }
-
 }

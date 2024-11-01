@@ -50,7 +50,7 @@ public class InsolvencyController {
     ) {
         DataMapHolder.get().companyNumber(companyNumber);
         LOGGER.info("Payload successfully received for PUT request", DataMapHolder.getLogMap());
-        insolvencyService.processInsolvency(contextId, companyNumber, requestBody);
+        insolvencyService.processInsolvency(companyNumber, requestBody);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -80,12 +80,12 @@ public class InsolvencyController {
      */
     @DeleteMapping("/company/{company_number}/insolvency")
     public ResponseEntity<Void> insolvency(
-            @RequestHeader("x-request-id") String contextId,
-            @PathVariable("company_number") String companyNumber) {
+            @PathVariable("company_number") String companyNumber,
+            @RequestHeader("X-DELTA-AT") String deltaAt) {
         DataMapHolder.get().companyNumber(companyNumber);
         LOGGER.info("DELETE request successfully received", DataMapHolder.getLogMap());
 
-        insolvencyService.deleteInsolvency(contextId, companyNumber);
+        insolvencyService.deleteInsolvency(companyNumber, deltaAt);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

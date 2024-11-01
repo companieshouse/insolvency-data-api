@@ -212,22 +212,12 @@ public class InsolvencySteps {
 
     @When("I send DELETE request with company number {string}")
     public void i_send_delete_request_with_company_number(String companyNumber) {
-        String uri = "/company/{company_number}/insolvency";
+        sendDeleteRequestWithCompanyNumberAndDeltaAt(companyNumber, "20241010175532456123");
+    }
 
-        HttpHeaders headers = new HttpHeaders();
-        this.contextId = "5234234234";
-        headers.set("x-request-id", "5234234234");
-        headers.set("ERIC-Identity", "SOME_IDENTITY");
-        headers.set("ERIC-Identity-Type", "key");
-        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
-
-        var request = new HttpEntity<>(null, headers);
-
-        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class,
-                companyNumber);
-
-        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
-        this.companyNumber = companyNumber;
+    @When("I send DELETE request with company number {string} and delta_at {string}")
+    public void iSendDeleteRequestWithCompanyNumberAndDeltaAt(String companyNumber, String deltaAt) {
+        sendDeleteRequestWithCompanyNumberAndDeltaAt(companyNumber, deltaAt);
     }
 
     @When("I send DELETE request with company number {string} without setting eric headers")
@@ -307,7 +297,7 @@ public class InsolvencySteps {
         assertThat(expected.getCases()).isEqualTo(actual.getCases());
     }
 
-    @Then("the CHS Kafka API is invoked successfully with event {string}")
+    @Then("the CHS Kafka API is invoked with event {string}")
     public void chs_kafka_api_invoked(String event) {
         verify(moreThanOrExactly(1), postRequestedFor(urlEqualTo("/private/resource-changed")));
     }
@@ -328,6 +318,31 @@ public class InsolvencySteps {
     @Then("the company insolvency with company number {string} still exists in the database")
     public void company_insolvency_exists(String companyNumber) {
         Assertions.assertThat(insolvencyRepository.existsById(companyNumber)).isTrue();
+    }
+
+    @Then("the company insolvency with company number {string} is deleted from the database")
+    public void companyInsolvencyDeleted(String companyNumber) {
+        Assertions.assertThat(insolvencyRepository.existsById(companyNumber)).isFalse();
+    }
+
+    private void sendDeleteRequestWithCompanyNumberAndDeltaAt(String companyNumber, String deltaAt) {
+        String uri = "/company/{company_number}/insolvency";
+
+        HttpHeaders headers = new HttpHeaders();
+        this.contextId = "5234234234";
+        headers.set("x-request-id", "5234234234");
+        headers.set("X-DELTA-AT", deltaAt);
+        headers.set("ERIC-Identity", "SOME_IDENTITY");
+        headers.set("ERIC-Identity-Type", "key");
+        headers.set("ERIC-Authorised-Key-Privileges", "internal-app");
+
+        var request = new HttpEntity<>(null, headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.DELETE, request, Void.class,
+                companyNumber);
+
+        CucumberContext.CONTEXT.set("statusCode", response.getStatusCode().value());
+        this.companyNumber = companyNumber;
     }
 
     private void verifyPutData(InsolvencyDocument actual, InsolvencyDocument expected) {

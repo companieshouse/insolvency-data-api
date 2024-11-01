@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.insolvency.data.service;
 
 import static uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication.NAMESPACE;
+import static uk.gov.companieshouse.insolvency.data.util.DateTimeFormatter.isDeltaStale;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -46,7 +47,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     }
 
     @Override
-    public void processInsolvency(String contextId, String companyNumber, InternalCompanyInsolvency companyInsolvency) {
+    public void processInsolvency(String companyNumber, InternalCompanyInsolvency companyInsolvency) {
         try {
             Optional<InsolvencyDocument> insolvencyDocumentFromDbOptional =
                     insolvencyRepository.findById(companyNumber);
@@ -54,14 +55,13 @@ public class InsolvencyServiceImpl implements InsolvencyService {
 
             insolvencyDocumentFromDbOptional
                     .ifPresent(existingDocument -> {
-                                if (existingDocument.getDeltaAt() != null
-                                        && dateFromBodyRequest.isBefore(existingDocument.getDeltaAt())) {
-                                    LOGGER.error("Insolvency not persisted - stale delta at",
-                                            DataMapHolder.getLogMap());
-                                    throw new ConflictException("Insolvency not persisted - stale delta at");
-                                }
-                            }
-                    );
+                        if (existingDocument.getDeltaAt() != null
+                                && dateFromBodyRequest.isBefore(existingDocument.getDeltaAt())) {
+                            LOGGER.error("Insolvency not persisted - stale delta at",
+                                    DataMapHolder.getLogMap());
+                            throw new ConflictException("Insolvency not persisted - stale delta at");
+                        }
+                    });
 
             InsolvencyDocument insolvencyDocument = mapInsolvencyDocument(
                     companyNumber, companyInsolvency);
@@ -73,7 +73,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
             insolvencyRepository.save(insolvencyDocument);
             LOGGER.info("Company insolvency successfully persisted in MongoDB", DataMapHolder.getLogMap());
 
-            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocument,
+            insolvencyApiService.invokeChsKafkaApi(companyNumber, insolvencyDocument.getCompanyInsolvency(),
                     EventType.CHANGED);
             LOGGER.info("ChsKafka api CHANGED invoked successfully", DataMapHolder.getLogMap());
 
@@ -111,22 +111,27 @@ public class InsolvencyServiceImpl implements InsolvencyService {
     }
 
     @Override
-    public void deleteInsolvency(String contextId, String companyNumber) {
+    public void deleteInsolvency(String companyNumber, String deltaAt) {
         try {
-            Optional<InsolvencyDocument> insolvencyDocumentOptional =
-                    insolvencyRepository.findById(companyNumber);
+            Optional<InsolvencyDocument> insolvencyDocumentOptional = insolvencyRepository.findById(companyNumber);
 
             if (insolvencyDocumentOptional.isEmpty()) {
-                LOGGER.info("Company insolvency doesn't exist", DataMapHolder.getLogMap());
-                throw new DocumentNotFoundException("Company insolvency doesn't exist");
+                LOGGER.info("Invoking CHS Kafka API DELETED with empty deleted data", DataMapHolder.getLogMap());
+                insolvencyApiService.invokeChsKafkaApi(companyNumber, null, EventType.DELETED);
+            } else {
+                InsolvencyDocument existingDocument = insolvencyDocumentOptional.get();
+                if (isDeltaStale(deltaAt, existingDocument.getDeltaAt())) {
+                    LOGGER.error("Insolvency not deleted - stale delta at", DataMapHolder.getLogMap());
+                    throw new ConflictException("Insolvency not deleted - stale delta at");
+                }
+
+                LOGGER.info("Deleting company insolvency");
+                insolvencyRepository.deleteById(companyNumber);
+
+                LOGGER.info("Invoking CHS Kafka API DELETED", DataMapHolder.getLogMap());
+                insolvencyApiService.invokeChsKafkaApi(companyNumber, existingDocument.getCompanyInsolvency(),
+                        EventType.DELETED);
             }
-
-            insolvencyApiService.invokeChsKafkaApi(contextId, insolvencyDocumentOptional.get(),
-                    EventType.DELETED);
-            LOGGER.info("CHS Kafka API DELETED invoked successfully", DataMapHolder.getLogMap());
-
-            insolvencyRepository.deleteById(companyNumber);
-            LOGGER.info("Company insolvency deleted successfully");
         } catch (TransientDataAccessException ex) {
             LOGGER.info(RECOVERABLE_MONGO_EX_MSG, DataMapHolder.getLogMap());
             throw new BadGatewayException(RECOVERABLE_MONGO_EX_MSG, ex);
@@ -141,7 +146,7 @@ public class InsolvencyServiceImpl implements InsolvencyService {
         InternalData internalData = insolvencyApi.getInternalData();
         CompanyInsolvency externalData = insolvencyApi.getExternalData();
 
-        //Generating new Etag
+        // Generating new Etag
         externalData.setEtag(GenerateEtagUtil.generateEtag());
         return new InsolvencyDocument(companyNumber,
                 externalData,

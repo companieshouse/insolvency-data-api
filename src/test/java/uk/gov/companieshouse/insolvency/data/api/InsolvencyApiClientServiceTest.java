@@ -23,13 +23,15 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateChangedResourceHandler;
 import uk.gov.companieshouse.api.handler.chskafka.request.PrivateChangedResourcePost;
 import uk.gov.companieshouse.api.http.HttpClient;
+import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
-import uk.gov.companieshouse.insolvency.data.model.InsolvencyDocument;
 
 @ExtendWith(MockitoExtension.class)
 class InsolvencyApiClientServiceTest {
+
+    private static final String COMPANY_NUMBER = "CH4000056";
 
     @Mock
     private ApiClientService apiClientService;
@@ -62,8 +64,8 @@ class InsolvencyApiClientServiceTest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
-                getInsolvencyDocument(), EventType.CHANGED);
+        ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi(COMPANY_NUMBER, new CompanyInsolvency(),
+                EventType.CHANGED);
 
         Assertions.assertThat(apiResponse).isNotNull();
 
@@ -84,8 +86,8 @@ class InsolvencyApiClientServiceTest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenReturn(response);
 
-        ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi("35234234",
-                getInsolvencyDocument(), EventType.DELETED);
+        ApiResponse<?> apiResponse = insolvencyApiService.invokeChsKafkaApi(COMPANY_NUMBER, new CompanyInsolvency(),
+                EventType.DELETED);
 
         Assertions.assertThat(apiResponse).isNotNull();
 
@@ -106,8 +108,9 @@ class InsolvencyApiClientServiceTest {
                 changedResourcePost);
         when(changedResourcePost.execute()).thenThrow(RuntimeException.class);
 
-        assertThrows(RuntimeException.class, () -> insolvencyApiService.invokeChsKafkaApi
-                ("3245435", getInsolvencyDocument(), EventType.CHANGED));
+        assertThrows(RuntimeException.class,
+                () -> insolvencyApiService.invokeChsKafkaApi(COMPANY_NUMBER, new CompanyInsolvency(),
+                        EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
@@ -133,8 +136,8 @@ class InsolvencyApiClientServiceTest {
         when(changedResourcePost.execute()).thenThrow(apiErrorResponseException);
 
         assertThrows(exception,
-                () -> insolvencyApiService.invokeChsKafkaApi
-                        ("3245435", getInsolvencyDocument(), EventType.CHANGED));
+                () -> insolvencyApiService.invokeChsKafkaApi(COMPANY_NUMBER, new CompanyInsolvency(),
+                        EventType.CHANGED));
 
         verify(apiClientService, times(1)).getInternalApiClient();
         verify(internalApiClient, times(1)).privateChangedResourceHandler();
@@ -149,10 +152,5 @@ class InsolvencyApiClientServiceTest {
                 Arguments.of(405, "Method Not Allowed", BadGatewayException.class),
                 Arguments.of(500, "Internal Service Error", RuntimeException.class)
         );
-    }
-
-    private InsolvencyDocument getInsolvencyDocument() {
-        return new InsolvencyDocument("CH4000056", null, null,
-                null, null);
     }
 }
