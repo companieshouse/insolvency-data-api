@@ -83,7 +83,7 @@ public class InsolvencyController {
             @PathVariable("company_number") String companyNumber,
             @RequestHeader("X-DELTA-AT") String deltaAt) {
         DataMapHolder.get().companyNumber(companyNumber);
-        LOGGER.info("DELETE request successfully received", DataMapHolder.getLogMap());
+        LOGGER.info("Processing DELETE request", DataMapHolder.getLogMap());
 
         insolvencyService.deleteInsolvency(companyNumber, deltaAt);
         return ResponseEntity.status(HttpStatus.OK).build();
