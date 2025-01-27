@@ -2,6 +2,8 @@ package uk.gov.companieshouse.insolvency.data.api;
 
 import static uk.gov.companieshouse.insolvency.data.InsolvencyDataApiApplication.NAMESPACE;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import uk.gov.companieshouse.api.insolvency.CompanyInsolvency;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.insolvency.data.common.EventType;
 import uk.gov.companieshouse.insolvency.data.exceptions.BadGatewayException;
+import uk.gov.companieshouse.insolvency.data.exceptions.SerDesException;
 import uk.gov.companieshouse.insolvency.data.logging.DataMapHolder;
 import uk.gov.companieshouse.insolvency.data.util.DateTimeFormatter;
 import uk.gov.companieshouse.logging.Logger;
@@ -27,14 +30,16 @@ public class InsolvencyApiService {
 
     private final String chsKafkaUrl;
     private final ApiClientService apiClientService;
+    private final ObjectMapper objectMapper;
 
     /**
      * Invoke Insolvency API.
      */
     public InsolvencyApiService(@Value("${chs.kafka.api.endpoint}") String chsKafkaUrl,
-            ApiClientService apiClientService) {
+            ApiClientService apiClientService, ObjectMapper objectMapper) {
         this.chsKafkaUrl = chsKafkaUrl;
         this.apiClientService = apiClientService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -76,7 +81,14 @@ public class InsolvencyApiService {
         changedResource.setContextId(DataMapHolder.getRequestId());
 
         if (EventType.DELETED.equals(eventType)) {
-            changedResource.setDeletedData(insolvencyData);
+            try {
+                Object dataAsObject = objectMapper.readValue(
+                        objectMapper.writeValueAsString(insolvencyData), Object.class
+                );
+                changedResource.setDeletedData(dataAsObject);
+            } catch (JsonProcessingException ex) {
+                throw new SerDesException("Failed to serialise/deserialise data", ex);
+            }
         }
 
         LOGGER.info("Successfully mapped ChangedResource object", DataMapHolder.getLogMap());
