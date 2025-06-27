@@ -23,6 +23,7 @@
 		<maven-build-helper-plugin.version>3.6.1</maven-build-helper-plugin.version>
 		<jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
 		<springfox-boot-starter.version>3.0.0</springfox-boot-starter.version>
+		<opemtelemtry.version>2.14.0</opemtelemtry.version>
 
 		<!-- Internal -->
 		<structured-logging.version>3.0.32</structured-logging.version>
@@ -67,6 +68,13 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>io.opentelemetry.instrumentation</groupId>
+				<artifactId>opentelemetry-instrumentation-bom</artifactId>
+				<version>${opemtelemtry.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
 				<version>${spring.boot.version}</version>
@@ -91,6 +99,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.opentelemetry.instrumentation</groupId>
+			<artifactId>opentelemetry-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
