@@ -4,4 +4,4 @@
 
 PORT=8080
 
-exec java -jar -Dserver.port="${PORT}" "insolvency-data-api.jar"
+exec java -jar -Dserver.port="${PORT}" -XX:MaxRAMPercentage=80 "insolvency-data-api.jar"
