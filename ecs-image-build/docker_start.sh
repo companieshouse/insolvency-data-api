@@ -1,5 +1,4 @@
 #!/bin/bash
-#
 # Start script for insolvency-data-api
 
 PORT=8080
