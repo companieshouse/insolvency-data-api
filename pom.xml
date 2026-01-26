@@ -34,7 +34,7 @@
 		<api-security-java.version>2.0.8</api-security-java.version>
 
 		<!-- tests -->
-		<assertj-core.version>3.27.3</assertj-core.version>
+		<assertj-core.version>3.27.7</assertj-core.version>
 		<test-containers.version>1.21.2</test-containers.version>
 		<maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
 		<cucumber-java.version>7.23.0</cucumber-java.version>
