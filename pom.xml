@@ -34,7 +34,7 @@
 		<!-- tests -->
 		<test-containers.version>1.21.2</test-containers.version>
 		<maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
-		<cucumber-java.version>7.23.0</cucumber-java.version>
+		<cucumber-java.version>7.34.3</cucumber-java.version>
 		<maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
 		<skip.integration.tests>false</skip.integration.tests>
 		<skip.unit.tests>false</skip.unit.tests>
@@ -182,12 +182,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.junit.jupiter</groupId>
-					<artifactId>junit-jupiter-engine</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -203,6 +197,12 @@
 					<artifactId>commons-compress</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.18.0</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
@@ -367,6 +367,13 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${maven-failsafe-plugin.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.surefire</groupId>
+						<artifactId>surefire-junit47</artifactId>
+						<version>${maven-failsafe-plugin.version}</version>
+					</dependency>
+				</dependencies>
 				<executions>
 					<execution>
 						<phase>integration-test</phase>
@@ -377,12 +384,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<properties>
-						<property>
-							<name>listener</name>
-							<value>org.sonar.java.jacoco.JUnitListener</value>
-						</property>
-					</properties>
 					<argLine>-Dfile.encoding=UTF-8</argLine>
 					<argLine>${failsafeArgLine}</argLine>
 					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
