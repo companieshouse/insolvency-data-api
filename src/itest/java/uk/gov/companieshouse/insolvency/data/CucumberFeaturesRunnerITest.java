@@ -8,7 +8,9 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRe
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig;
+import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
@@ -20,4 +22,7 @@ import uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig;
 @DirtiesContext
 @ActiveProfiles({"test"})
 public class CucumberFeaturesRunnerITest extends AbstractMongoConfig {
+
+    @MockitoSpyBean
+    InsolvencyRepository insolvencyRepository;
 }

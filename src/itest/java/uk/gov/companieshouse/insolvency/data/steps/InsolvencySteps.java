@@ -6,7 +6,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig.mongoDBContainer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,11 +22,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -70,10 +71,7 @@ public class InsolvencySteps {
     @Before
     public void dbCleanUp() {
         WiremockTestConfig.setupWiremock();
-
-        if (mongoDBContainer.getContainerId() == null) {
-            mongoDBContainer.start();
-        }
+        Mockito.reset(insolvencyRepository);
         insolvencyRepository.deleteAll();
     }
 
@@ -99,7 +97,11 @@ public class InsolvencySteps {
 
     @Given("the insolvency database is down")
     public void the_insolvency_db_is_down() {
-        mongoDBContainer.stop();
+        DataAccessResourceFailureException dbException =
+                new DataAccessResourceFailureException("Simulated MongoDB failure");
+        Mockito.doThrow(dbException).when(insolvencyRepository).findById(Mockito.any());
+        Mockito.doThrow(dbException).when(insolvencyRepository).save(Mockito.any());
+        Mockito.doThrow(dbException).when(insolvencyRepository).deleteById(Mockito.any());
     }
 
     @When("I send GET request with company number {string}")
