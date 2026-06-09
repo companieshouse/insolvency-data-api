@@ -1,12 +1,10 @@
 package uk.gov.companieshouse.insolvency.data.config;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-
-import java.time.Duration;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.jspecify.annotations.NonNull;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -17,12 +15,13 @@ public class AbstractMongoConfig {
     public static final MongoDBContainer mongoDBContainer = new MongoDBContainer(
             DockerImageName.parse("mongo:5.0.12"));
 
-    @DynamicPropertySource
-    public static void setProperties(DynamicPropertyRegistry registry) {
-        mongoDBContainer.setWaitStrategy(Wait.defaultWaitStrategy()
-                .withStartupTimeout(Duration.of(300, SECONDS)));
-        registry.add("spring.data.mongodb.uri", (() -> mongoDBContainer.getReplicaSetUrl() +
-                "?serverSelectionTimeoutMS=100&connectTimeoutMS=100"));
-        mongoDBContainer.start();
+    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+        @Override
+        public void initialize(@NonNull ConfigurableApplicationContext context) {
+            mongoDBContainer.start();
+            TestPropertyValues.of(
+                    "spring.mongodb.uri=" + mongoDBContainer.getReplicaSetUrl()
+            ).applyTo(context);
+        }
     }
 }
