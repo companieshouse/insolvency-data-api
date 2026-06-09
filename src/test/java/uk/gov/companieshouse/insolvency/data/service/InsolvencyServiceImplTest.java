@@ -18,7 +18,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -253,7 +252,7 @@ class InsolvencyServiceImplTest {
 
     @Test
     void when_invalid_insolvency_number_is_given_then_throw_exception() {
-        Assert.assertThrows(RuntimeException.class, () -> underTest.retrieveCompanyInsolvency(COMPANY_NUMBER));
+        assertThrows(RuntimeException.class, () -> underTest.retrieveCompanyInsolvency(COMPANY_NUMBER));
 
         verify(repository).findById(any());
         verify(insolvencyApiService, times(0)).invokeChsKafkaApi(anyString(), any(), any());
