@@ -8,7 +8,6 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRe
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig;
 import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
@@ -22,8 +21,7 @@ import uk.gov.companieshouse.insolvency.data.repository.InsolvencyRepository;
 @AutoConfigureTestRestTemplate
 @DirtiesContext
 @ActiveProfiles({"test"})
-@ContextConfiguration(initializers = AbstractMongoConfig.Initializer.class)
-public class CucumberFeaturesRunnerITest {
+public class CucumberFeaturesRunnerITest extends AbstractMongoConfig {
 
     @MockitoSpyBean
     InsolvencyRepository insolvencyRepository;

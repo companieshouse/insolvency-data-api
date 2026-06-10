@@ -18,7 +18,6 @@ import uk.gov.companieshouse.insolvency.data.config.AbstractMongoConfig;
 
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@ContextConfiguration(initializers = AbstractMongoConfig.Initializer.class)
 class InsolvencyDataApiApplicationTest {
 
     @Autowired
