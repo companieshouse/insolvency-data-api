@@ -65,6 +65,20 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<!-- OVERRIDE-->
+
+			<!-- fix CVE-2026-41841(5.9), CVE-2026-41840(5.9), CVE-2026-41851(7.5), CVE-2026-41850(7.5), CVE-2026-41843(5.9), CVE-2026-41842(7.5) -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>7.0.8</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- OVERRIDE-->
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-opentelemetry</artifactId>
@@ -74,13 +88,6 @@
 				<artifactId>opentelemetry-logback-appender-1.0</artifactId>
 				<version>2.28.1-alpha</version>
 				<scope>compile</scope>
-			</dependency>
-
-			<!-- CVE fixes - must be declared before Spring Boot BOM -->
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>3.18.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
@@ -161,6 +168,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.20.0</version>
+			<scope>compile</scope>
 		</dependency>
 
 		<dependency>
