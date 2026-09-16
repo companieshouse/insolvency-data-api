@@ -24,13 +24,6 @@
 		<maven-build-helper-plugin.version>3.6.1</maven-build-helper-plugin.version>
 		<jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
 
-		<!-- Internal -->
-		<structured-logging.version>4.0.4</structured-logging.version>
-		<private-api-sdk-java.version>6.0.24</private-api-sdk-java.version>
-		<api-sdk-manager-java-library.version>3.0.23</api-sdk-manager-java-library.version>
-		<api-helper-java-library.version>3.0.4</api-helper-java-library.version>
-		<api-security-java.version>2.0.26</api-security-java.version>
-
 		<!-- tests -->
 		<test-containers.version>1.21.2</test-containers.version>
 		<maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
@@ -38,7 +31,6 @@
 		<maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
 		<skip.integration.tests>false</skip.integration.tests>
 		<skip.unit.tests>false</skip.unit.tests>
-		<spring-cloud-contract-wiremock-version>5.0.2</spring-cloud-contract-wiremock-version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 
 		<!--sonar configuration-->
@@ -56,7 +48,7 @@
 		<sonar.login></sonar.login>
 		<sonar.password></sonar.password>
 
- 		<spring.boot.version>4.0.6</spring.boot.version>
+ 		<spring.boot.version>4.1.1</spring.boot.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
@@ -69,20 +61,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-
-			<!-- OVERRIDE-->
-
-			<!-- fix CVE-2026-41841(5.9), CVE-2026-41840(5.9), CVE-2026-41851(7.5), CVE-2026-41850(7.5), CVE-2026-41843(5.9), CVE-2026-41842(7.5) -->
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-framework-bom</artifactId>
-				<version>7.0.8</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
-			<!-- OVERRIDE-->
-
 			<dependency>
 				<groupId>io.opentelemetry.instrumentation</groupId>
 				<artifactId>opentelemetry-instrumentation-bom</artifactId>
@@ -110,30 +88,30 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+
+			<!-- OVERRIDE -->
+
+			<!-- override tomcat-embed-core to fix CVE-2026-65183(8.1), CVE-2026-65905(9.8), CVE-2026-65927(7.5), CVE-2026-66299(5.3), CVE-2026-66422(8.1), CVE-2026-68763(7.5), CVE-2026-68525(9.1), CVE-2026-68569(8.1), CVE-2026-73180(6.8), CVE-2026-65182(9.1), CVE-2026-65637(9.8) - transitive dependency from spring-boot-starter-web 4.1.1 -->
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-core</artifactId>
+				<version>11.0.25</version>
+				<scope>compile</scope>
+			</dependency>
+
+			<!-- override tomcat-embed-websocket to fix CVE-2026-65183(8.1), CVE-2026-65905(9.8), CVE-2026-65927(7.5), CVE-2026-66299(5.3), CVE-2026-66422(8.1), CVE-2026-68763(7.5), CVE-2026-68525(9.1), CVE-2026-68569(8.1), CVE-2026-73180(6.8), CVE-2026-65182(9.1), CVE-2026-65637(9.8) - transitive dependency from spring-boot-starter-web 4.1.1 -->
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-websocket</artifactId>
+				<version>11.0.25</version>
+				<scope>compile</scope>
+			</dependency>
+
+			<!-- OVERRIDE END -->
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
-		<!-- OVERRIDE-->
-
-		<!-- override tomcat-embed-core to fix CWE-20 - transitive dependency from spring-boot-starter-web 4.0.6 -->
-		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-core</artifactId>
-			<version>11.0.22</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- override tomcat-embed-websocket to fix CWE-20 - transitive dependency from spring-boot-starter-web 4.0.6 -->
-		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-websocket</artifactId>
-			<version>11.0.22</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- OVERRIDE-->
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
@@ -149,12 +127,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-to-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -184,21 +156,33 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- ch internal libraries -->
 		<dependency>
 			<groupId>uk.gov.companieshouse</groupId>
 			<artifactId>structured-logging</artifactId>
-			<version>${structured-logging.version}</version>
+			<version>4.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.gov.companieshouse</groupId>
 			<artifactId>private-api-sdk-java</artifactId>
-			<version>${private-api-sdk-java.version}</version>
+			<version>7.2.27</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.gov.companieshouse</groupId>
 			<artifactId>api-sdk-manager-java-library</artifactId>
-			<version>${api-sdk-manager-java-library.version}</version>
+			<version>3.0.31</version>
 		</dependency>
+		<dependency>
+			<groupId>uk.gov.companieshouse</groupId>
+			<artifactId>api-helper-java</artifactId>
+			<version>3.0.5</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.gov.companieshouse</groupId>
+			<artifactId>api-security-java</artifactId>
+			<version>2.0.29</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -212,12 +196,6 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mongodb</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.commons</groupId>
-					<artifactId>commons-compress</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -264,19 +242,9 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-contract-wiremock</artifactId>
-			<version>${spring-cloud-contract-wiremock-version}</version>
+			<version>5.0.3</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>uk.gov.companieshouse</groupId>
-			<artifactId>api-helper-java</artifactId>
-			<version>${api-helper-java-library.version}</version>
-		</dependency>
-        <dependency>
-            <groupId>uk.gov.companieshouse</groupId>
-            <artifactId>api-security-java</artifactId>
-            <version>${api-security-java.version}</version>
-        </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
