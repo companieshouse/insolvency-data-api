@@ -38,7 +38,6 @@
 		<maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
 		<skip.integration.tests>false</skip.integration.tests>
 		<skip.unit.tests>false</skip.unit.tests>
-		<spring-cloud-contract-wiremock-version>5.0.2</spring-cloud-contract-wiremock-version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 
 		<!--sonar configuration-->
@@ -69,20 +68,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-
-			<!-- OVERRIDE-->
-
-			<!-- fix CVE-2026-41841(5.9), CVE-2026-41840(5.9), CVE-2026-41851(7.5), CVE-2026-41850(7.5), CVE-2026-41843(5.9), CVE-2026-41842(7.5) -->
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-framework-bom</artifactId>
-				<version>7.0.8</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
-			<!-- OVERRIDE-->
-
 			<dependency>
 				<groupId>io.opentelemetry.instrumentation</groupId>
 				<artifactId>opentelemetry-instrumentation-bom</artifactId>
@@ -110,30 +95,30 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+
+			<!-- OVERRIDE -->
+
+			<!-- override tomcat-embed-core to fix CVE-2026-65183(8.1), CVE-2026-65905(9.8), CVE-2026-65927(7.5), CVE-2026-66299(5.3), CVE-2026-66422(8.1), CVE-2026-68763(7.5), CVE-2026-68525(9.1), CVE-2026-68569(8.1), CVE-2026-73180(6.8), CVE-2026-65182(9.1), CVE-2026-65637(9.8) - transitive dependency from spring-boot-starter-web 4.1.1 -->
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-core</artifactId>
+				<version>11.0.25</version>
+				<scope>compile</scope>
+			</dependency>
+
+			<!-- override tomcat-embed-websocket to fix CVE-2026-65183(8.1), CVE-2026-65905(9.8), CVE-2026-65927(7.5), CVE-2026-66299(5.3), CVE-2026-66422(8.1), CVE-2026-68763(7.5), CVE-2026-68525(9.1), CVE-2026-68569(8.1), CVE-2026-73180(6.8), CVE-2026-65182(9.1), CVE-2026-65637(9.8) - transitive dependency from spring-boot-starter-web 4.1.1 -->
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-websocket</artifactId>
+				<version>11.0.25</version>
+				<scope>compile</scope>
+			</dependency>
+
+			<!-- OVERRIDE END -->
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
-		<!-- OVERRIDE-->
-
-		<!-- override tomcat-embed-core to fix CWE-20 - transitive dependency from spring-boot-starter-web 4.0.6 -->
-		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-core</artifactId>
-			<version>11.0.22</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- override tomcat-embed-websocket to fix CWE-20 - transitive dependency from spring-boot-starter-web 4.0.6 -->
-		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-websocket</artifactId>
-			<version>11.0.22</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- OVERRIDE-->
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
@@ -149,12 +134,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-to-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -212,12 +191,6 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>mongodb</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.commons</groupId>
-					<artifactId>commons-compress</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -264,7 +237,7 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-contract-wiremock</artifactId>
-			<version>${spring-cloud-contract-wiremock-version}</version>
+			<version>5.0.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
